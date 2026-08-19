@@ -230,6 +230,131 @@ function formatNumber(value) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+function TypedName() {
+  const fullName = "Niko Schultz";
+  const [typedName, setTypedName] = useState("");
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTypedName(fullName);
+      return undefined;
+    }
+
+    let characterIndex = 0;
+    const typeName = () => {
+      characterIndex += 1;
+      setTypedName(fullName.slice(0, characterIndex));
+
+      if (characterIndex < fullName.length) {
+        window.setTimeout(typeName, characterIndex === 5 ? 210 : 105);
+      }
+    };
+
+    const startDelay = window.setTimeout(typeName, 280);
+    return () => window.clearTimeout(startDelay);
+  }, []);
+
+  const [firstName, lastName] = typedName.split(" ");
+
+  return (
+    <h1
+      className="signature-name mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl"
+      aria-label={fullName}
+    >
+      <span>{firstName || "\u00A0"}</span>
+      <br />
+      <span>{lastName || "\u00A0"}</span>
+      <span className="typing-caret" aria-hidden="true" />
+    </h1>
+  );
+}
+
+function RepellingDotGrid() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const context = canvas.getContext("2d");
+    const pointer = { x: -1000, y: -1000 };
+    const spacing = 34;
+    const repulsionRadius = 180;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    let frameId;
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+
+    const resizeCanvas = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(width * pixelRatio);
+      canvas.height = Math.floor(height * pixelRatio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    };
+
+    const setPointer = (event) => {
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+    };
+
+    const clearPointer = () => {
+      pointer.x = -1000;
+      pointer.y = -1000;
+    };
+
+    const draw = (time = 0) => {
+      context.clearRect(0, 0, width, height);
+      const driftX = reducedMotion ? 0 : Math.sin(time / 5500) * 1.5;
+      const driftY = reducedMotion ? 0 : Math.cos(time / 6500) * 1.1;
+
+      for (let y = -spacing; y < height + spacing; y += spacing) {
+        for (let x = -spacing; x < width + spacing; x += spacing) {
+          const dotX = x + driftX;
+          const dotY = y + driftY;
+          const distanceX = dotX - pointer.x;
+          const distanceY = dotY - pointer.y;
+          const distance = Math.hypot(distanceX, distanceY);
+          const influence = Math.max(0, 1 - distance / repulsionRadius);
+          const push = influence * influence * 22;
+          const safeDistance = Math.max(distance, 1);
+          const displacedX = dotX + (distanceX / safeDistance) * push;
+          const displacedY = dotY + (distanceY / safeDistance) * push;
+          const radius = 1.35 + influence * 0.8;
+
+          context.beginPath();
+          context.arc(displacedX, displacedY, radius, 0, Math.PI * 2);
+          context.fillStyle = `rgba(34, 39, 35, ${0.2 + influence * 0.2})`;
+          context.fill();
+        }
+      }
+
+      if (!reducedMotion) frameId = window.requestAnimationFrame(draw);
+    };
+
+    resizeCanvas();
+    draw();
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("pointermove", setPointer, { passive: true });
+    window.addEventListener("pointerleave", clearPointer);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("pointermove", setPointer);
+      window.removeEventListener("pointerleave", clearPointer);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="ambient-grid" aria-hidden="true" />;
+}
+
 function CustomCursor() {
   const [cursor, setCursor] = useState({
     x: -100,
@@ -315,14 +440,14 @@ export default function HomePage() {
     <main className="site-shell relative isolate overflow-hidden bg-cream text-ink">
       <CustomCursor />
 
-      <div className="ambient-grid" aria-hidden="true" />
+      <RepellingDotGrid />
       <div className="ambient-orb ambient-orb-one" aria-hidden="true" />
       <div className="ambient-orb ambient-orb-two" aria-hidden="true" />
 
       {/* HERO */}
       <section
         id="top"
-        className="relative mx-auto max-w-6xl px-6 pb-24 pt-10 sm:pb-28 sm:pt-16"
+        className="hero-section relative mx-auto max-w-6xl overflow-visible px-6 pb-28 pt-10 sm:pb-36 sm:pt-16"
       >
         <div className="audience-strip" data-reveal>
           <span className="audience-intro">Follow the journey</span>
@@ -346,56 +471,37 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid items-center gap-12 sm:grid-cols-2">
-          <div data-reveal>
-            <span className="bib-label">800m Athlete · Puerto Rico</span>
+        <div className="hero-background" aria-hidden="true">
+          <Image
+            src="/images/hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 640px) 72vw, 100vw"
+            className="hero-background-image object-cover"
+          />
+          <div className="hero-background-fade" />
+        </div>
 
-            <h1 className="signature-name mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl">
-              Niko
-              <br />
-              Schultz
-            </h1>
+        <div className="hero-content relative z-10" data-reveal>
+          <span className="bib-label">800m Athlete · Puerto Rico</span>
 
-            <p className="mt-7 max-w-md text-balance font-body text-lg leading-relaxed text-ink-soft">
-              Niko Schultz is a Puerto Rico–eligible 800m runner, Penn State
-              student-athlete, and NCAA First-Team All-American. A Joliet,
-              Illinois native, he owns a 1:45.24 personal best and finished
-              sixth in the 2026 NCAA Division I Outdoor 800m final.
-            </p>
+          <TypedName />
 
-            <div className="mt-9 flex flex-wrap gap-4">
-              <a href="#news" className="btn-primary" data-cursor-hover>
-                Recent news <span aria-hidden="true">↓</span>
-              </a>
-              <a href="#bests" className="btn-secondary" data-cursor-hover>
-                Personal bests
-              </a>
-            </div>
-          </div>
+          <p className="mt-7 max-w-md text-balance font-body text-lg leading-relaxed text-ink-soft">
+            Niko Schultz is a Puerto Rico–eligible 800m runner, Penn State
+            student-athlete, and NCAA First-Team All-American. A Joliet,
+            Illinois native, he owns a 1:45.24 personal best and finished sixth
+            in the 2026 NCAA Division I Outdoor 800m final.
+          </p>
 
-          <div className="hero-frame" data-reveal>
-            <div className="hero-image-wrap relative aspect-[4/5] w-full overflow-hidden rounded-[1.7rem] bg-ink">
-              <Image
-                src="/images/hero.jpg"
-                alt="Niko Schultz racing the 800 meters"
-                fill
-                priority
-                sizes="(min-width: 640px) 480px, 100vw"
-                className="hero-image object-cover"
-              />
-              <div className="image-wash" aria-hidden="true" />
-              <div className="hero-caption">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
-                  Built for the bell lap
-                </span>
-                <span className="hero-caption-line" aria-hidden="true" />
-                <span className="font-body text-sm font-bold">800M</span>
-              </div>
-            </div>
-            <div className="hero-offset-card" aria-hidden="true">
-              <span>PB</span>
-              <strong>1:45.24</strong>
-            </div>
+          <div className="mt-9 flex flex-wrap gap-4">
+            <a href="#news" className="btn-primary" data-cursor-hover>
+              Recent news <span aria-hidden="true">↓</span>
+            </a>
+            <a href="#bests" className="btn-secondary" data-cursor-hover>
+              Personal bests
+            </a>
           </div>
         </div>
       </section>
@@ -406,10 +512,7 @@ export default function HomePage() {
 
       {/* PERSONAL BESTS */}
       <section id="bests" className="relative mx-auto max-w-6xl px-6 py-24">
-        <div className="section-kicker" data-reveal>
-          <span>Performance</span>
-        </div>
-        <h2 className="section-heading mt-4" data-reveal>
+        <h2 className="section-heading" data-reveal>
           Personal Bests
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -464,10 +567,7 @@ export default function HomePage() {
           </div>
 
           <div className="sm:order-1" data-reveal>
-            <div className="section-kicker">
-              <span>About the athlete</span>
-            </div>
-            <h2 className="section-heading mt-4">About</h2>
+            <h2 className="section-heading">About</h2>
 
             <p className="mt-7 text-lg leading-relaxed text-ink-soft">
               Niko Schultz is a Puerto Rico–eligible middle-distance runner
@@ -501,10 +601,7 @@ export default function HomePage() {
 
       {/* RECENT NEWS */}
       <section id="news" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="section-kicker" data-reveal>
-          <span>From the track</span>
-        </div>
-        <h2 className="section-heading mt-4" data-reveal>
+        <h2 className="section-heading" data-reveal>
           Recent News
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -565,10 +662,7 @@ export default function HomePage() {
 
       {/* GALLERY */}
       <section id="gallery" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="section-kicker" data-reveal>
-          <span>In motion</span>
-        </div>
-        <h2 className="section-heading mt-4" data-reveal>
+        <h2 className="section-heading" data-reveal>
           Gallery
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -676,11 +770,31 @@ export default function HomePage() {
           );
         }
         .signature-name {
+          position: relative;
           color: #202720;
           font-family: var(--font-signature), cursive;
           font-weight: 400;
           letter-spacing: -0.07em;
           text-shadow: 3px 3px 0 rgba(209, 168, 61, 0.22);
+        }
+        .signature-name > span:not(.typing-caret) {
+          display: inline-block;
+          min-width: 2.25ch;
+        }
+        .typing-caret {
+          display: inline-block;
+          width: 0.07em;
+          height: 0.86em;
+          margin-left: 0.08em;
+          vertical-align: -0.05em;
+          border-radius: 999px;
+          background: #b76849;
+          animation: blinkCaret 850ms step-end infinite;
+        }
+        @keyframes blinkCaret {
+          50% {
+            opacity: 0;
+          }
         }
         @media (pointer: fine) {
           .site-shell,
@@ -693,20 +807,16 @@ export default function HomePage() {
           position: fixed;
           z-index: -1;
           inset: 0;
+          width: 100vw;
+          height: 100vh;
           pointer-events: none;
-          opacity: 0.37;
-          background-image: radial-gradient(
-            rgba(34, 39, 35, 0.24) 1.35px,
-            transparent 1.5px
-          );
-          background-size: 34px 34px;
+          opacity: 0.62;
           -webkit-mask-image: linear-gradient(
             to bottom,
             black,
             transparent 84%
           );
           mask-image: linear-gradient(to bottom, black, transparent 84%);
-          animation: driftGrid 18s linear infinite;
         }
         .ambient-orb {
           position: absolute;
@@ -729,14 +839,6 @@ export default function HomePage() {
           left: -16rem;
           background: #778c71;
           animation-delay: -5s;
-        }
-        @keyframes driftGrid {
-          from {
-            background-position: 0 0;
-          }
-          to {
-            background-position: 102px 68px;
-          }
         }
         @keyframes floatOrb {
           from {
@@ -816,6 +918,8 @@ export default function HomePage() {
         }
 
         .audience-strip {
+          position: relative;
+          z-index: 10;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -880,30 +984,52 @@ export default function HomePage() {
           font-size: 0.63rem;
           letter-spacing: 0.02em;
         }
-        .hero-frame {
-          position: relative;
-          padding: 0.6rem;
-          border-radius: 2rem;
+        .hero-background {
+          position: absolute;
+          z-index: 0;
+          top: 4.25rem;
+          right: -18vw;
+          width: min(76vw, 60rem);
+          height: clamp(34rem, 62vw, 48rem);
+          overflow: hidden;
+          pointer-events: none;
+          opacity: 0.73;
+        }
+        .hero-background-image {
+          object-position: center 36%;
+          filter: saturate(0.78) contrast(0.94);
+          transform: scale(1.03);
+        }
+        .hero-background-fade {
+          position: absolute;
+          inset: 0;
           background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.94),
-            rgba(217, 206, 184, 0.5)
-          );
-          box-shadow: 0 26px 70px -42px rgba(35, 42, 37, 0.9);
+              90deg,
+              #f7f1e4 2%,
+              rgba(247, 241, 228, 0.94) 31%,
+              rgba(247, 241, 228, 0.25) 60%,
+              rgba(247, 241, 228, 0) 78%
+            ),
+            linear-gradient(
+              180deg,
+              #f7f1e4 0%,
+              rgba(247, 241, 228, 0.14) 24%,
+              rgba(247, 241, 228, 0) 62%,
+              #f7f1e4 100%
+            );
         }
-        .hero-image-wrap {
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+        .hero-content {
+          display: flex;
+          min-height: 30rem;
+          max-width: 36rem;
+          flex-direction: column;
+          justify-content: center;
         }
-        .hero-image,
         .profile-image,
         .gallery-image {
           transition:
             transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
             filter 600ms ease;
-        }
-        .hero-frame:hover .hero-image {
-          transform: scale(1.045);
-          filter: saturate(1.08) contrast(1.04);
         }
         .image-wash {
           position: absolute;
@@ -923,46 +1049,6 @@ export default function HomePage() {
             transparent 40%,
             rgba(26, 33, 28, 0.2)
           );
-        }
-        .hero-caption {
-          position: absolute;
-          right: 1.25rem;
-          bottom: 1.2rem;
-          left: 1.25rem;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          color: #f7f1e4;
-        }
-        .hero-caption-line {
-          flex: 1;
-          height: 1px;
-          background: rgba(247, 241, 228, 0.48);
-        }
-        .hero-offset-card {
-          position: absolute;
-          bottom: -1.35rem;
-          left: -1.25rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.1rem;
-          padding: 0.75rem 1rem;
-          border: 1px solid rgba(247, 241, 228, 0.15);
-          border-radius: 0.9rem;
-          background: #202720;
-          color: #f7f1e4;
-          box-shadow: 0 15px 32px -18px rgba(25, 31, 27, 0.95);
-        }
-        .hero-offset-card span {
-          color: #d1a83d;
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 0.6rem;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-        }
-        .hero-offset-card strong {
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 1rem;
         }
         .profile-frame::after {
           position: absolute;
@@ -1140,9 +1226,39 @@ export default function HomePage() {
           }
         }
         @media (max-width: 639px) {
-          .hero-offset-card {
-            left: 0.8rem;
-            bottom: -1rem;
+          .hero-section {
+            overflow: hidden;
+          }
+          .hero-background {
+            top: 8rem;
+            right: -13rem;
+            width: 35rem;
+            height: 38rem;
+            opacity: 0.4;
+          }
+          .hero-background-fade {
+            background: linear-gradient(
+                90deg,
+                #f7f1e4 0%,
+                rgba(247, 241, 228, 0.72) 52%,
+                rgba(247, 241, 228, 0.12) 100%
+              ),
+              linear-gradient(180deg, #f7f1e4 0%, transparent 30%, #f7f1e4 100%);
+          }
+          .hero-content {
+            min-height: 32rem;
+          }
+          .audience-strip {
+            align-items: flex-start;
+            flex-direction: column;
+            margin-bottom: 2.75rem;
+          }
+          .audience-list {
+            width: 100%;
+            flex-direction: column;
+          }
+          .audience-card {
+            width: 100%;
           }
           .gallery-caption {
             opacity: 1;
