@@ -30,7 +30,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-cream-line/0 bg-cream/90 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <a href="#top" className="bib-label">
-            NS · 800M
+            Niko Schultz 
           </a>
           <ul className="hidden gap-8 font-body text-sm font-semibold uppercase tracking-wide text-ink sm:flex">
             <li><a href="#about" className="hover:text-clay">About</a></li>
@@ -120,24 +120,30 @@ export default function HomePage() {
             />
           </div>
           <div className="sm:order-1">
-            <h2 className="section-heading">About</h2>
-            <p className="mt-6 text-lg leading-relaxed text-ink-soft">
-              Niko Schultz is a professional middle-distance runner
-              specializing in the 800m. He started running the two-lap
-              race in high school after a coach clocked his 400m split
-              and refused to let him move up to the mile.
-            </p>
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              He now trains out of Minneapolis, splitting his season
-              between the US indoor circuit and summer meets across
-              Europe. Off the track, he coaches youth sprinters on
-              weekends and is slowly working through every marathon
-              in the state park system — on foot, not in competition.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <span className="bib-label">Minneapolis, MN</span>
-              <span className="bib-label">Team Northline AC</span>
-            </div>
+  <h2 className="section-heading">About</h2>
+
+  <p className="mt-6 text-lg leading-relaxed text-ink-soft">
+    Niko Schultz is a Puerto Rico–eligible middle-distance runner
+    specializing in the 800m. Originally from Joliet, Illinois, he ran
+    for Plainfield South High School before competing at the University
+    of Nebraska–Lincoln and later transferring to Penn State.
+  </p>
+
+  <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+    In 2026, Schultz earned First-Team All-American honors after
+    finishing sixth in the NCAA Division I Outdoor 800m final. He owns
+    a 1:45.24 personal best in the 800m and brings range from the 400m
+    through the 1,000m. Off the track, Niko is a business marketing
+    graduate and digital creator who shares his training, racing, and
+    athlete journey.
+  </p>
+
+  <div className="mt-8 flex flex-wrap gap-3">
+    <span className="bib-label">Joliet, IL</span>
+    <span className="bib-label">Penn State Track &amp; Field</span>
+    <span className="bib-label">800m — 1:45.24</span>
+  </div>
+</div>
           </div>
         </div>
       </section>
