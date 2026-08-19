@@ -15,8 +15,8 @@ const schedule = [
 ];
 
 const galleryImages = [
-  { src: "/images/gallery-01.jpg", alt: "Niko Schultz crossing the finish line" },
-  { src: "/images/gallery-02.jpg", alt: "Niko Schultz in the starting blocks" },
+  { src: "/images/IMG_2203.jpeg", alt: "Niko Schultz crossing the finish line" },
+  { src: "/images/IMG_2208.jpeg", alt: "Niko Schultz in the starting blocks" },
   { src: "/images/gallery-03.jpg", alt: "Niko Schultz training on the track" },
   { src: "/images/gallery-04.jpg", alt: "Niko Schultz celebrating a win" },
   { src: "/images/gallery-05.jpg", alt: "Niko Schultz mid-race, lane three" },
