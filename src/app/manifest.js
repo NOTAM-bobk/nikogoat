@@ -6,7 +6,7 @@ export default function manifest() {
       "Niko Schultz: Puerto Rico-eligible 800m runner, Penn State student-athlete, race results, videos, and athlete updates.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAF0C9",
+    background_color: "#F4EFE4",
     theme_color: "#B76849",
     icons: [
       {

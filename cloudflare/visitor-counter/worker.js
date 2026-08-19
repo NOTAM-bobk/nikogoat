@@ -6,7 +6,7 @@ const ALLOWED_ORIGINS = new Set([
 function corsHeaders(origin) {
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",
     "Cache-Control": "no-store",
@@ -52,6 +52,22 @@ export default {
     }
 
     const { pathname } = new URL(request.url);
+
+    if (pathname === "/count" && request.method === "GET") {
+      if (!origin) {
+        return new Response("Origin not allowed", { status: 403 });
+      }
+
+      const result = await env.VISITOR_DB.prepare(
+        "SELECT COUNT(*) AS unique_visitors FROM visitors",
+      ).first();
+
+      return Response.json(
+        { uniqueVisitors: Number(result?.unique_visitors || 0) },
+        { headers: corsHeaders(origin) },
+      );
+    }
+
     if (pathname !== "/track" || request.method !== "POST") {
       return new Response("Not found", { status: 404 });
     }

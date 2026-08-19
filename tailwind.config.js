@@ -1,20 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/app/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./src/app/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
         // Design tokens — Niko Schultz / 800m portfolio
         cream: {
-          DEFAULT: "#F9F0D4", // primary background, slightly warmer yellow
-          soft: "#F1E7C9",    // card / section alt background
-          line: "#E6D9B6",    // hairline / divider on cream
+          DEFAULT: "#F4EFE4", // requested primary background
+          soft: "#ECE5D5", // card / section alt background
+          line: "#DED4C0", // hairline / divider on cream
         },
         ink: {
           DEFAULT: "#1E2622", // near-black, slight green cast — body copy
-          soft: "#4B5750",    // secondary text
+          soft: "#4B5750", // secondary text
         },
         clay: {
           DEFAULT: "#C1440E", // track-surface red-orange — primary accent

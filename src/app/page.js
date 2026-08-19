@@ -208,6 +208,41 @@ const futureGoals = [
   "Future 1 Million Followers",
 ];
 
+const achievements = [
+  {
+    year: "2026",
+    metric: "1:45.24",
+    title: "800m personal best",
+    detail: "Runner-up at the Virginia Challenge in Charlottesville.",
+    href: "https://flashresults.com/2026_Meets/Outdoor/04-16_VirginiaChallenge/124-1_compiled.htm",
+    tone: "clay",
+  },
+  {
+    year: "2026",
+    metric: "First Team",
+    title: "NCAA All-American",
+    detail: "Sixth in the NCAA Division I Outdoor 800m final in 1:45.50.",
+    href: "https://gopsusports.com/news/2026/06/12/clay-and-schultz-close-outdoor-season-with-first-team-all-american-honors",
+    tone: "gold",
+  },
+  {
+    year: "2026",
+    metric: "Bronze",
+    title: "Big Ten Outdoor 800m",
+    detail: "Third place in the conference final with a 1:47.70 finish.",
+    href: "https://www.tfrrs.org/results/96121/6000070/2026_Big_Ten_Outdoor_Track__Field_Championships/Mens-800-Meters",
+    tone: "sage",
+  },
+  {
+    year: "2026",
+    metric: "1:15.22",
+    title: "600m personal best",
+    detail: "Set at the 2026 Big Ten Indoor Track & Field Championships.",
+    href: "https://www.tfrrs.org/results/94449/5818867/2026_Big_Ten_Indoor_Track_and_Field_Championships/Mens-600-Meters",
+    tone: "ink",
+  },
+];
+
 const siteStructuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -458,6 +493,78 @@ function VisitorAnalytics({ start }) {
   }, [endpoint, start]);
 
   return null;
+}
+
+function VisitorCount({ start }) {
+  const endpoint = process.env.NEXT_PUBLIC_VISITOR_COUNTER_ENDPOINT;
+  const [count, setCount] = useState(null);
+
+  useEffect(() => {
+    if (!start || !endpoint) return undefined;
+
+    const countEndpoint = endpoint.replace(/\/track\/?$/, "/count");
+    void fetch(countEndpoint, {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit",
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (typeof data?.uniqueVisitors === "number") {
+          setCount(data.uniqueVisitors);
+        }
+      })
+      .catch(() => {
+        // The footer remains graceful until Cloudflare analytics is configured.
+      });
+
+    return undefined;
+  }, [endpoint, start]);
+
+  return (
+    <div className="visitor-count" aria-live="polite">
+      <span className="visitor-count-label">Site visitors</span>
+      <strong>{count === null ? "—" : formatNumber(count)}</strong>
+      <span className="visitor-count-note">unique since launch</span>
+    </div>
+  );
+}
+
+function ShareSiteButton() {
+  const [feedback, setFeedback] = useState("");
+
+  const shareSite = async () => {
+    const shareData = {
+      title: "Niko Schultz | Puerto Rico 800m Runner",
+      text: "Follow Niko Schultz's running journey, results, and recent videos.",
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setFeedback("Shared");
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+        setFeedback("Link copied");
+      } else {
+        setFeedback("Copy this page's link");
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError") setFeedback("Share unavailable");
+    }
+
+    window.setTimeout(() => setFeedback(""), 2200);
+  };
+
+  return (
+    <div className="share-site">
+      <button type="button" onClick={shareSite} data-cursor-hover>
+        Share this page <span aria-hidden="true">↗</span>
+      </button>
+      <span aria-live="polite">{feedback}</span>
+    </div>
+  );
 }
 
 function SiteLoader() {
@@ -1079,22 +1186,27 @@ export default function HomePage() {
           <div className="sm:order-1" data-reveal>
             <h2 className="section-heading section-title">About</h2>
 
-            <p className="mt-7 text-lg leading-relaxed text-ink-soft">
-              Niko Schultz is a Puerto Rico–eligible middle-distance runner
-              specializing in the 800m. Originally from Joliet, Illinois, he ran
-              for Plainfield South High School before competing at the
-              University of Nebraska–Lincoln and later transferring to Penn
-              State.
-            </p>
+            <div className="about-story mt-7">
+              <p>
+                <span className="about-lead">
+                  Built on Illinois high-school laps. Sharpened across the Big
+                  Ten.
+                </span>
+                Niko Schultz is a Puerto Rico–eligible middle-distance runner
+                whose work lives at the edge of speed and endurance. The Joliet
+                native developed at Plainfield South, competed for the
+                University of Nebraska–Lincoln, and now races for Penn State.
+              </p>
 
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              In 2026, Schultz earned First-Team All-American honors after
-              finishing sixth in the NCAA Division I Outdoor 800m final. He owns
-              a 1:45.24 personal best in the 800m and brings range from the 400m
-              through the 1,000m. Off the track, Niko is a business marketing
-              graduate and digital creator who shares his training, racing, and
-              athlete journey.
-            </p>
+              <p>
+                In 2026, he delivered a{" "}
+                <strong>1:45.24 800m personal best</strong> and earned{" "}
+                <strong>First-Team All-American</strong> recognition after a
+                sixth-place NCAA final. With range from the 400m through the
+                1,000m, Niko brings the same focus to training, racing, and the
+                creator journey he shares beyond the track.
+              </p>
+            </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <span className="bib-label">Joliet, IL</span>
@@ -1124,6 +1236,50 @@ export default function HomePage() {
 
       <div className="mx-auto max-w-6xl px-6">
         <div className="lane-divider journey-follow-divider" />
+      </div>
+
+      {/* ACHIEVEMENTS */}
+      <section
+        id="achievements"
+        data-section
+        className="achievements-section relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <div className="max-w-2xl">
+          <h2 className="section-heading section-title" data-reveal>
+            Achievements
+          </h2>
+          <p
+            className="mt-3 max-w-xl leading-relaxed text-ink-soft"
+            data-reveal
+          >
+            A recent run of results, each linked to the race report or official
+            update behind it.
+          </p>
+        </div>
+        <div className="achievements-grid mt-10">
+          {achievements.map((achievement, index) => (
+            <a
+              key={achievement.title}
+              href={achievement.href}
+              target="_blank"
+              rel="noreferrer"
+              className={`achievement-card achievement-${achievement.tone}`}
+              data-reveal
+              data-cursor-hover
+            >
+              <span className="achievement-index">0{index + 1}</span>
+              <span className="achievement-year">{achievement.year}</span>
+              <strong>{achievement.metric}</strong>
+              <h3>{achievement.title}</h3>
+              <p>{achievement.detail}</p>
+              <span className="achievement-proof">View proof ↗</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="lane-divider achievements-follow-divider" />
       </div>
 
       {/* FOLLOW */}
@@ -1254,6 +1410,10 @@ export default function HomePage() {
           </table>
         </div>
       </section>
+
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="lane-divider news-videos-divider" />
+      </div>
 
       {/* RECENT VIDEOS */}
       <section
@@ -1410,6 +1570,10 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
+          <div className="footer-tools relative">
+            <VisitorCount start={!isLoading} />
+            <ShareSiteButton />
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col items-start justify-between gap-4 px-1 text-sm text-ink-soft sm:flex-row sm:items-center">
@@ -1442,7 +1606,7 @@ export default function HomePage() {
         }
         .site-shell {
           font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
-          background-color: #f9f0d4;
+          background-color: #f4efe4;
           background-image: radial-gradient(
               circle at 10% 5%,
               rgba(255, 255, 255, 0.48),
@@ -1456,7 +1620,7 @@ export default function HomePage() {
           inset: 0;
           display: grid;
           place-items: center;
-          background: #f9f0d4;
+          background: #f4efe4;
         }
         .site-loader-inner {
           display: grid;
@@ -1520,7 +1684,7 @@ export default function HomePage() {
           left: 0;
           height: 4px;
           overflow: hidden;
-          background: rgba(249, 240, 212, 0.38);
+          background: rgba(244, 239, 228, 0.38);
           opacity: 0;
           transform: translateY(-100%);
           transition:
@@ -1557,10 +1721,10 @@ export default function HomePage() {
         .name-circle {
           position: absolute;
           z-index: 0;
-          top: -0.2em;
-          left: -0.16em;
-          width: 1.18em;
-          height: 2.17em;
+          top: -0.16em;
+          left: -0.22em;
+          width: 2.35em;
+          height: 1.82em;
           overflow: visible;
           fill: none;
           pointer-events: none;
@@ -1575,10 +1739,10 @@ export default function HomePage() {
           opacity: 0;
         }
         .signature-name.is-complete .name-circle path:first-child {
-          animation: drawNameCircle 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: drawNameCircle 3.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .signature-name.is-complete .name-circle path:last-child {
-          animation: drawNameCircle 700ms 190ms cubic-bezier(0.16, 1, 0.3, 1)
+          animation: drawNameCircle 2.95s 160ms cubic-bezier(0.16, 1, 0.3, 1)
             forwards;
           opacity: 0.48;
         }
@@ -1590,12 +1754,20 @@ export default function HomePage() {
             stroke-dashoffset: 290;
             opacity: 0;
           }
-          12% {
+          7% {
             opacity: 0.92;
+          }
+          28% {
+            stroke-dashoffset: 0;
+            opacity: 0.84;
+          }
+          76% {
+            stroke-dashoffset: 0;
+            opacity: 0.84;
           }
           100% {
             stroke-dashoffset: 0;
-            opacity: 0.84;
+            opacity: 0;
           }
         }
         @keyframes fadeCaret {
@@ -1906,24 +2078,24 @@ export default function HomePage() {
           inset: 0;
           background: radial-gradient(
               circle at 79% 42%,
-              rgba(249, 240, 212, 0) 0 20%,
-              rgba(249, 240, 212, 0.28) 48%,
-              #f9f0d4 92%
+              rgba(244, 239, 228, 0) 0 20%,
+              rgba(244, 239, 228, 0.28) 48%,
+              #f4efe4 92%
             ),
             linear-gradient(
               90deg,
-              #f9f0d4 0%,
-              rgba(249, 240, 212, 0.92) 27%,
-              rgba(249, 240, 212, 0.5) 47%,
-              rgba(249, 240, 212, 0.1) 72%,
-              rgba(249, 240, 212, 0) 100%
+              #f4efe4 0%,
+              rgba(244, 239, 228, 0.92) 27%,
+              rgba(244, 239, 228, 0.5) 47%,
+              rgba(244, 239, 228, 0.1) 72%,
+              rgba(244, 239, 228, 0) 100%
             ),
             linear-gradient(
               180deg,
-              #f9f0d4 0%,
-              rgba(249, 240, 212, 0.02) 28%,
-              rgba(249, 240, 212, 0.08) 72%,
-              #f9f0d4 100%
+              #f4efe4 0%,
+              rgba(244, 239, 228, 0.02) 28%,
+              rgba(244, 239, 228, 0.08) 72%,
+              #f4efe4 100%
             );
         }
         .hero-statement {
@@ -2001,6 +2173,32 @@ export default function HomePage() {
           transform: scale(1.06);
           filter: saturate(1.05);
         }
+        .about-story {
+          display: grid;
+          gap: 1.15rem;
+          color: rgba(35, 42, 37, 0.72);
+          font-size: clamp(1.02rem, 1.7vw, 1.14rem);
+          line-height: 1.76;
+        }
+        .about-story p {
+          position: relative;
+          margin: 0;
+          padding-left: 1.1rem;
+          border-left: 2px solid rgba(183, 104, 73, 0.32);
+        }
+        .about-lead {
+          display: block;
+          margin-bottom: 0.58rem;
+          color: #202720;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: 1.15em;
+          font-weight: 700;
+          line-height: 1.15;
+        }
+        .about-story strong {
+          color: #a5543e;
+          font-weight: 800;
+        }
         .future-goals {
           display: flex;
           align-items: center;
@@ -2010,7 +2208,7 @@ export default function HomePage() {
           padding: 3.4rem max(1.5rem, calc((100vw - 72rem) / 2));
           border-bottom: 1px solid rgba(35, 42, 37, 0.12);
           background: rgba(35, 42, 37, 0.96);
-          color: #f9f0d4;
+          color: #f4efe4;
         }
         .future-goals-label {
           flex: 0 0 auto;
@@ -2130,7 +2328,7 @@ export default function HomePage() {
           flex-direction: column;
           justify-content: space-between;
           overflow: hidden;
-          border: 1px solid rgba(249, 240, 212, 0.1);
+          border: 1px solid rgba(244, 239, 228, 0.1);
           border-radius: 1.3rem;
           padding: 1.35rem;
           background: #202720;
@@ -2176,7 +2374,7 @@ export default function HomePage() {
         .split-time {
           position: relative;
           z-index: 1;
-          color: #f9f0d4;
+          color: #f4efe4;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
           font-size: clamp(2rem, 5vw, 3.2rem);
           font-weight: 700;
@@ -2209,16 +2407,123 @@ export default function HomePage() {
           bottom: 0.65rem;
           width: 1.3rem;
           height: 1.3rem;
-          border-right: 1px solid rgba(249, 240, 212, 0.34);
-          border-bottom: 1px solid rgba(249, 240, 212, 0.34);
+          border-right: 1px solid rgba(244, 239, 228, 0.34);
+          border-bottom: 1px solid rgba(244, 239, 228, 0.34);
         }
         .journey-section {
           overflow: hidden;
         }
-        .journey-follow-divider {
+        .journey-follow-divider,
+        .achievements-follow-divider,
+        .news-videos-divider {
           margin-top: -0.6rem;
           margin-bottom: -0.6rem;
           opacity: 0.72;
+        }
+        .achievements-section {
+          overflow: hidden;
+        }
+        .achievements-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 1rem;
+        }
+        .achievement-card {
+          position: relative;
+          display: flex;
+          min-height: 17.5rem;
+          flex-direction: column;
+          overflow: hidden;
+          border: 1px solid rgba(35, 42, 37, 0.12);
+          border-radius: 1.45rem;
+          padding: 1.3rem;
+          background: rgba(255, 255, 255, 0.31);
+          box-shadow: 0 18px 44px -34px rgba(25, 31, 27, 0.72);
+          color: #202720;
+          text-decoration: none;
+          transition:
+            transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 340ms ease,
+            background 340ms ease;
+        }
+        .achievement-card::after {
+          position: absolute;
+          top: -2.8rem;
+          right: -2.8rem;
+          width: 8rem;
+          aspect-ratio: 1;
+          border-radius: 999px;
+          content: "";
+          opacity: 0.16;
+          transition: transform 420ms ease;
+        }
+        .achievement-card:hover {
+          transform: translateY(-0.45rem) rotate(-0.35deg);
+          background: rgba(255, 255, 255, 0.58);
+          box-shadow: 0 27px 52px -34px rgba(25, 31, 27, 0.78);
+        }
+        .achievement-card:hover::after {
+          transform: scale(1.24);
+        }
+        .achievement-clay::after {
+          background: #b76849;
+        }
+        .achievement-gold::after {
+          background: #d1a83d;
+        }
+        .achievement-sage::after {
+          background: #66897a;
+        }
+        .achievement-ink::after {
+          background: #202720;
+        }
+        .achievement-index,
+        .achievement-year,
+        .achievement-proof {
+          position: relative;
+          z-index: 1;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.63rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        .achievement-index {
+          color: #b76849;
+        }
+        .achievement-year {
+          margin-top: 1.35rem;
+          color: rgba(35, 42, 37, 0.5);
+        }
+        .achievement-card strong {
+          position: relative;
+          z-index: 1;
+          margin-top: 0.42rem;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.9rem, 3.8vw, 2.65rem);
+          line-height: 1;
+        }
+        .achievement-card h3 {
+          position: relative;
+          z-index: 1;
+          margin-top: 1rem;
+          font-family: var(--font-body), ui-rounded, sans-serif;
+          font-size: 0.94rem;
+          font-weight: 800;
+          line-height: 1.2;
+        }
+        .achievement-card p {
+          position: relative;
+          z-index: 1;
+          margin: 0.48rem 0 0;
+          color: rgba(35, 42, 37, 0.65);
+          font-size: 0.83rem;
+          line-height: 1.48;
+        }
+        .achievement-proof {
+          margin-top: auto;
+          padding-top: 1.1rem;
+          color: #a5543e;
         }
         .journey-timeline {
           --journey-progress: 0%;
@@ -2258,11 +2563,11 @@ export default function HomePage() {
           height: 2.45rem;
           place-items: center;
           overflow: hidden;
-          border: 2px solid #f9f0d4;
+          border: 2px solid #f4efe4;
           border-radius: 999px;
           background: #202720;
           box-shadow: 0 8px 18px -10px rgba(25, 31, 27, 0.9);
-          color: #f9f0d4;
+          color: #f4efe4;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 0.64rem;
           font-weight: 700;
@@ -2287,7 +2592,7 @@ export default function HomePage() {
           justify-self: center;
           width: 1rem;
           height: 1rem;
-          border: 3px solid #f9f0d4;
+          border: 3px solid #f4efe4;
           border-radius: 999px;
           background: #b76849;
           box-shadow: 0 0 0 1px rgba(183, 104, 73, 0.54);
@@ -2404,7 +2709,7 @@ export default function HomePage() {
         .follow-card:hover {
           z-index: 1;
           background: #202720;
-          color: #f9f0d4;
+          color: #f4efe4;
           transform: translateY(-0.35rem);
         }
         .follow-card:hover::before {
@@ -2518,10 +2823,10 @@ export default function HomePage() {
           width: 2.45rem;
           height: 2.45rem;
           place-items: center;
-          border: 1px solid rgba(249, 240, 212, 0.7);
+          border: 1px solid rgba(244, 239, 228, 0.7);
           border-radius: 999px;
           background: rgba(32, 39, 32, 0.66);
-          color: #f9f0d4;
+          color: #f4efe4;
           font-size: 0.7rem;
           transform: translate(-50%, -50%);
           transition:
@@ -2539,7 +2844,7 @@ export default function HomePage() {
           padding: 0.2rem 0.32rem;
           border-radius: 0.26rem;
           background: rgba(20, 26, 23, 0.84);
-          color: #f9f0d4;
+          color: #f4efe4;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 0.59rem;
           font-weight: 700;
@@ -2590,7 +2895,7 @@ export default function HomePage() {
           position: absolute;
           top: 0.75rem;
           left: 0.85rem;
-          color: rgba(249, 240, 212, 0.9);
+          color: rgba(244, 239, 228, 0.9);
           font-size: 0.62rem;
           letter-spacing: 0.14em;
         }
@@ -2598,7 +2903,7 @@ export default function HomePage() {
           position: absolute;
           right: 0.85rem;
           bottom: 0.7rem;
-          color: #f9f0d4;
+          color: #f4efe4;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
           font-size: 0.62rem;
           letter-spacing: 0.12em;
@@ -2717,6 +3022,68 @@ export default function HomePage() {
           background: rgba(255, 241, 190, 0.18);
           transform: rotate(90deg);
         }
+        .footer-tools {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-top: 2.25rem;
+          padding: 1rem 1.15rem;
+          border: 1px solid rgba(244, 239, 228, 0.16);
+          border-radius: 1rem;
+          background: rgba(244, 239, 228, 0.07);
+        }
+        .visitor-count {
+          display: grid;
+          grid-template-columns: auto auto;
+          align-items: baseline;
+          column-gap: 0.55rem;
+          color: #f4efe4;
+        }
+        .visitor-count-label,
+        .visitor-count-note {
+          grid-column: 1 / -1;
+          color: rgba(244, 239, 228, 0.55);
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.57rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        .visitor-count strong {
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: 1.85rem;
+          letter-spacing: -0.04em;
+          line-height: 1.05;
+        }
+        .share-site {
+          display: grid;
+          justify-items: end;
+          gap: 0.35rem;
+        }
+        .share-site button {
+          border: 0;
+          background: transparent;
+          color: #d1a83d;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.64rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          transition:
+            color 180ms ease,
+            transform 180ms ease;
+        }
+        .share-site button:hover {
+          color: #f4efe4;
+          transform: translateY(-1px);
+        }
+        .share-site > span {
+          min-height: 1em;
+          color: rgba(244, 239, 228, 0.54);
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.57rem;
+        }
         .footer-legal {
           margin-top: 1.2rem;
           padding: 1rem 0.25rem 0;
@@ -2770,10 +3137,19 @@ export default function HomePage() {
             line-height: 0.9;
           }
           .name-circle {
-            top: -0.16em;
-            left: -0.2em;
-            width: 1.24em;
-            height: 2.04em;
+            top: -0.13em;
+            left: -0.24em;
+            width: 2.5em;
+            height: 1.74em;
+          }
+          .profile-frame {
+            width: min(16rem, 68vw);
+            aspect-ratio: 4 / 5;
+            margin: 0 auto 0.85rem;
+          }
+          .profile-frame::after {
+            right: -0.6rem;
+            bottom: -0.6rem;
           }
           .hero-background {
             top: 8rem;
@@ -2785,17 +3161,17 @@ export default function HomePage() {
           .hero-background-fade {
             background: radial-gradient(
                 circle at 72% 42%,
-                rgba(249, 240, 212, 0) 0 18%,
-                rgba(249, 240, 212, 0.3) 54%,
-                #f9f0d4 95%
+                rgba(244, 239, 228, 0) 0 18%,
+                rgba(244, 239, 228, 0.3) 54%,
+                #f4efe4 95%
               ),
               linear-gradient(
                 90deg,
-                #f9f0d4 0%,
-                rgba(249, 240, 212, 0.82) 44%,
-                rgba(249, 240, 212, 0.18) 100%
+                #f4efe4 0%,
+                rgba(244, 239, 228, 0.82) 44%,
+                rgba(244, 239, 228, 0.18) 100%
               ),
-              linear-gradient(180deg, #f9f0d4 0%, transparent 30%, #f9f0d4 100%);
+              linear-gradient(180deg, #f4efe4 0%, transparent 30%, #f4efe4 100%);
           }
           .hero-content {
             min-height: 30.5rem;
@@ -2845,9 +3221,28 @@ export default function HomePage() {
           .sponsor-track {
             padding: 0.75rem 0;
           }
-          .journey-follow-divider {
+          .journey-follow-divider,
+          .achievements-follow-divider,
+          .news-videos-divider {
             margin-top: -0.35rem;
             margin-bottom: -0.35rem;
+          }
+          .achievements-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.8rem;
+          }
+          .achievement-card {
+            min-height: 15.4rem;
+            padding: 1rem;
+          }
+          .achievement-card strong {
+            font-size: 1.75rem;
+          }
+          .achievement-card h3 {
+            font-size: 0.82rem;
+          }
+          .achievement-card p {
+            font-size: 0.75rem;
           }
           .follow-prompt {
             align-self: flex-start;
@@ -2918,6 +3313,14 @@ export default function HomePage() {
           .contact-panel {
             padding: 1.5rem;
           }
+          .footer-tools {
+            align-items: flex-start;
+            flex-direction: column;
+            margin-top: 1.7rem;
+          }
+          .share-site {
+            justify-items: start;
+          }
           .footer-legal {
             font-size: 0.68rem;
           }
@@ -2933,6 +3336,12 @@ export default function HomePage() {
           .follow-card {
             min-height: 9.5rem;
             padding: 1rem;
+          }
+          .achievement-card {
+            min-height: 14.25rem;
+          }
+          .profile-frame {
+            width: min(14.5rem, 72vw);
           }
           .video-card h3 {
             font-size: 0.82rem;

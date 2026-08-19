@@ -27,7 +27,7 @@ The Worker does **not** save raw IP addresses. When a visitor opens the site, Cl
 
 5. Still in the Worker settings, open **Variables and Secrets** > **Add** > **Secret**. Set the name to `HASH_SALT`. Use Cloudflare’s **Generate** option if available, or paste a long random value that you keep private. Save the secret and deploy the Worker again.
 
-6. Open the Worker’s **Settings** > **Domains & Routes** and copy its `workers.dev` URL. Add `/track` to the end. For example: `https://niko-visitor-counter.<your-subdomain>.workers.dev/track`.
+6. Open the Worker’s **Settings** > **Domains & Routes** and copy its `workers.dev` URL. Add `/track` to the end. For example: `https://niko-visitor-counter.<your-subdomain>.workers.dev/track`. The website derives a companion `/count` endpoint from this address to display the aggregate visitor total in the contact card.
 
 7. In the dashboard for the service that publishes this website, add a public environment variable named `NEXT_PUBLIC_VISITOR_COUNTER_ENDPOINT`. Paste the complete `/track` URL as its value, then trigger a new deployment. If you publish the site with Cloudflare Pages, open the Pages project, select **Settings** > **Variables and Secrets**, add the variable for **Production**, save it, then go to **Deployments** and redeploy the latest version.
 
@@ -49,7 +49,7 @@ WHERE last_seen >= datetime('now', '-30 days');
 
 The Worker accepts browser requests only from `https://nikoschultz.com` and `https://www.nikoschultz.com`. If you test with a different production domain, edit the `ALLOWED_ORIGINS` values near the top of `worker.js` before pasting it into Cloudflare.
 
-Do not expose the D1 database, `HASH_SALT`, database query console, or visitor total as a public endpoint. The included Worker never returns the count to website visitors. This reduces scraping and prevents the stored pseudonymous markers from becoming a public tracking surface.
+Do not expose the D1 database, `HASH_SALT`, database query console, or any visitor-level data. The included `/count` endpoint returns only one public aggregate number (`uniqueVisitors`) for the contact card; it never returns IP addresses, hashes, timestamps, or individual visitor records. This keeps the stored pseudonymous markers private.
 
 ## Free-plan suitability
 
