@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+const numberFormatter = new Intl.NumberFormat("en-US");
+
 const personalBests = [
   {
     event: "400m",
@@ -432,7 +434,7 @@ function AnimatedAudienceCounter({ value, start }) {
 }
 
 function formatNumber(value) {
-  return new Intl.NumberFormat("en-US").format(value);
+  return numberFormatter.format(value);
 }
 
 function ScrollProgress() {
@@ -652,14 +654,19 @@ function RepellingDotGrid() {
     if (!canvas) return undefined;
 
     const context = canvas.getContext("2d");
-    const pointer = { x: -1000, y: -1000 };
+    const pointer = { x: -1000, y: -1000, active: false };
     const clickPulse = { x: -1000, y: -1000, strength: 0 };
     const spacing = 32;
     const repulsionRadius = 210;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const frameInterval = window.matchMedia("(pointer: fine)").matches
+      ? 1000 / 45
+      : 1000 / 30;
     let frameId;
+    let lastFrameTime = 0;
+    let isDocumentVisible = !document.hidden;
     let width = 0;
     let height = 0;
     let pixelRatio = 1;
@@ -667,7 +674,7 @@ function RepellingDotGrid() {
     const resizeCanvas = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.floor(width * pixelRatio);
       canvas.height = Math.floor(height * pixelRatio);
       canvas.style.width = `${width}px`;
@@ -678,11 +685,13 @@ function RepellingDotGrid() {
     const setPointer = (event) => {
       pointer.x = event.clientX;
       pointer.y = event.clientY;
+      pointer.active = true;
     };
 
     const clearPointer = () => {
       pointer.x = -1000;
       pointer.y = -1000;
+      pointer.active = false;
     };
 
     const createClickPulse = (event) => {
@@ -695,21 +704,29 @@ function RepellingDotGrid() {
       context.clearRect(0, 0, width, height);
       const driftX = reducedMotion ? 0 : Math.sin(time / 5500) * 1.5;
       const driftY = reducedMotion ? 0 : Math.cos(time / 6500) * 1.1;
+      const hasClickPulse = clickPulse.strength > 0;
 
       for (let y = -spacing; y < height + spacing; y += spacing) {
         for (let x = -spacing; x < width + spacing; x += spacing) {
           const dotX = x + driftX;
           const dotY = y + driftY;
-          const distanceX = dotX - pointer.x;
-          const distanceY = dotY - pointer.y;
-          const distance = Math.hypot(distanceX, distanceY);
-          const hoverInfluence = Math.max(0, 1 - distance / repulsionRadius);
-          const clickDistanceX = dotX - clickPulse.x;
-          const clickDistanceY = dotY - clickPulse.y;
-          const clickDistance = Math.hypot(clickDistanceX, clickDistanceY);
-          const clickInfluence =
-            Math.max(0, 1 - clickDistance / (repulsionRadius * 1.35)) *
-            clickPulse.strength;
+          const distanceX = pointer.active ? dotX - pointer.x : 0;
+          const distanceY = pointer.active ? dotY - pointer.y : 0;
+          const distance = pointer.active
+            ? Math.hypot(distanceX, distanceY)
+            : Infinity;
+          const hoverInfluence = pointer.active
+            ? Math.max(0, 1 - distance / repulsionRadius)
+            : 0;
+          const clickDistanceX = hasClickPulse ? dotX - clickPulse.x : 0;
+          const clickDistanceY = hasClickPulse ? dotY - clickPulse.y : 0;
+          const clickDistance = hasClickPulse
+            ? Math.hypot(clickDistanceX, clickDistanceY)
+            : Infinity;
+          const clickInfluence = hasClickPulse
+            ? Math.max(0, 1 - clickDistance / (repulsionRadius * 1.35)) *
+              clickPulse.strength
+            : 0;
           const safeDistance = Math.max(distance, 1);
           const clickSafeDistance = Math.max(clickDistance, 1);
           const directionX =
@@ -724,26 +741,61 @@ function RepellingDotGrid() {
               (clickInfluence * clickInfluence * 44);
           const displacedX = dotX + directionX;
           const displacedY = dotY + directionY;
-          const radius = 1.65 + Math.max(hoverInfluence, clickInfluence) * 1.05;
+          const influence = Math.max(hoverInfluence, clickInfluence);
+          const radius = 1.65 + influence * 1.05;
 
           context.beginPath();
           context.arc(displacedX, displacedY, radius, 0, Math.PI * 2);
-          context.fillStyle = `rgba(27, 35, 29, ${0.3 + Math.max(hoverInfluence, clickInfluence) * 0.22})`;
+          context.fillStyle = `rgba(27, 35, 29, ${0.3 + influence * 0.22})`;
           context.fill();
         }
       }
 
-      clickPulse.strength *= 0.95;
-      if (clickPulse.strength < 0.01) clickPulse.strength = 0;
-      if (!reducedMotion) frameId = window.requestAnimationFrame(draw);
+      if (hasClickPulse) {
+        clickPulse.strength *= 0.95;
+        if (clickPulse.strength < 0.01) clickPulse.strength = 0;
+      }
+    };
+
+    const tick = (time) => {
+      if (!isDocumentVisible) {
+        frameId = undefined;
+        return;
+      }
+
+      if (time - lastFrameTime >= frameInterval) {
+        draw(time);
+        lastFrameTime = time;
+      }
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    const handleVisibilityChange = () => {
+      isDocumentVisible = !document.hidden;
+      if (!isDocumentVisible) {
+        window.cancelAnimationFrame(frameId);
+        frameId = undefined;
+        return;
+      }
+
+      resizeCanvas();
+      lastFrameTime = 0;
+      draw(performance.now());
+      if (!reducedMotion && !frameId) {
+        frameId = window.requestAnimationFrame(tick);
+      }
     };
 
     resizeCanvas();
     draw();
+    if (!reducedMotion && isDocumentVisible) {
+      frameId = window.requestAnimationFrame(tick);
+    }
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("pointermove", setPointer, { passive: true });
     window.addEventListener("pointerdown", createClickPulse, { passive: true });
     window.addEventListener("pointerleave", clearPointer);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.cancelAnimationFrame(frameId);
@@ -751,6 +803,7 @@ function RepellingDotGrid() {
       window.removeEventListener("pointermove", setPointer);
       window.removeEventListener("pointerdown", createClickPulse);
       window.removeEventListener("pointerleave", clearPointer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -811,7 +864,7 @@ function ProgressTimeline() {
       <div className="timeline-rail" aria-hidden="true">
         <span className="timeline-rail-progress" />
         <span className="timeline-runner">
-          <Image src="/images/ns.png" alt="" fill sizes="40px" priority />
+          <Image src="/images/ns.png" alt="" fill sizes="40px" />
         </span>
       </div>
 
@@ -931,35 +984,29 @@ function DeveloperSupportPrompt() {
 }
 
 function CustomCursor() {
-  const [cursor, setCursor] = useState({
-    x: -100,
-    y: -100,
-    visible: false,
-    active: false,
-  });
+  const cursorRef = useRef(null);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return undefined;
 
     const moveCursor = (event) => {
+      const cursor = cursorRef.current;
+      if (!cursor) return;
+
       const isInteractive =
         event.target instanceof Element &&
         event.target.closest(
           "a, button, input, textarea, select, [data-cursor-hover]",
         );
 
-      setCursor({
-        x: event.clientX,
-        y: event.clientY,
-        visible: true,
-        active: Boolean(isInteractive),
-      });
+      cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+      cursor.classList.add("is-visible");
+      cursor.classList.toggle("is-active", Boolean(isInteractive));
     };
 
-    const hideCursor = () =>
-      setCursor((current) => ({ ...current, visible: false }));
+    const hideCursor = () => cursorRef.current?.classList.remove("is-visible");
 
-    window.addEventListener("mousemove", moveCursor);
+    window.addEventListener("mousemove", moveCursor, { passive: true });
     document.documentElement.addEventListener("mouseleave", hideCursor);
 
     return () => {
@@ -969,11 +1016,7 @@ function CustomCursor() {
   }, []);
 
   return (
-    <div
-      aria-hidden="true"
-      className={`site-cursor ${cursor.visible ? "is-visible" : ""} ${cursor.active ? "is-active" : ""}`}
-      style={{ left: cursor.x, top: cursor.y }}
-    >
+    <div aria-hidden="true" ref={cursorRef} className="site-cursor">
       <span />
     </div>
   );
@@ -1202,7 +1245,7 @@ export default function HomePage() {
                 src="/images/profile.jpg"
                 alt="Portrait of Niko Schultz"
                 fill
-                sizes="(min-width: 640px) 480px, 100vw"
+                sizes="(max-width: 639px) 34vw, (min-width: 640px) 480px, 100vw"
                 className="profile-image object-cover"
               />
               <div className="image-wash image-wash-light" aria-hidden="true" />
@@ -1493,7 +1536,8 @@ export default function HomePage() {
                 <img
                   src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
                   alt={`Thumbnail for ${video.title}`}
-                  loading={index > 1 ? "lazy" : "eager"}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span className="video-play" aria-hidden="true">
                   ▶
@@ -1536,7 +1580,11 @@ export default function HomePage() {
                 src={img.src}
                 alt={img.alt}
                 fill
-                sizes="(min-width: 640px) 640px, 50vw"
+                sizes={
+                  index === 0 || index === 4
+                    ? "(min-width: 640px) 640px, 50vw"
+                    : "(min-width: 640px) 320px, 50vw"
+                }
                 className="gallery-image object-cover"
               />
               <div className="gallery-overlay" aria-hidden="true" />
@@ -1835,6 +1883,7 @@ export default function HomePage() {
         .ambient-grid {
           position: fixed;
           z-index: -1;
+          contain: strict;
           inset: 0;
           width: 100vw;
           height: 100vh;
@@ -1903,6 +1952,9 @@ export default function HomePage() {
         .site-cursor {
           position: fixed;
           z-index: 100;
+          top: 0;
+          left: 0;
+          will-change: transform;
           width: 28px;
           height: 28px;
           margin: -14px 0 0 -14px;
@@ -2907,6 +2959,14 @@ export default function HomePage() {
         }
         .news-mobile-list {
           display: none;
+        }
+        @supports (content-visibility: auto) {
+          .recent-videos,
+          #gallery,
+          #contact {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 860px;
+          }
         }
         .gallery-card {
           transform: translateZ(0);
