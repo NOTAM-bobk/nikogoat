@@ -53,11 +53,12 @@ export default function HomePage() {
               <br />
               Schultz
             </h1>
-            <p className="mt-6 max-w-md text-balance font-body text-lg text-ink-soft">
-              Professional 800m runner racing for the two-lap gap between
-              a controlled first 400 and an uncontrolled last 150.
-              Based in Minneapolis. Racing worldwide.
-            </p>
+           <p className="mt-6 max-w-md text-balance font-body text-lg text-ink-soft">
+  Niko Schultz is a Puerto Rico–eligible 800m runner, Penn State
+  student-athlete, and NCAA First-Team All-American. A Joliet, Illinois
+  native, he owns a 1:45.24 personal best and finished sixth in the 2026
+  NCAA Division I Outdoor 800m final.
+</p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="#schedule" className="btn-primary">See race schedule</a>
               <a href="#bests" className="btn-secondary">Personal bests</a>
