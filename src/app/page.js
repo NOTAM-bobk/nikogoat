@@ -83,6 +83,37 @@ const socialStats = [
   },
 ];
 
+const progressMilestones = [
+  {
+    year: "2018–2021",
+    stage: "Plainfield South",
+    title: "Built the foundation",
+    detail:
+      "Started his path in Joliet, Illinois, building the range and resilience that would carry him into Division I competition.",
+  },
+  {
+    year: "2021–2025",
+    stage: "Nebraska",
+    title: "Division I development",
+    detail:
+      "Competed for Nebraska, sharpened his middle-distance focus, and earned a University of Nebraska–Lincoln degree.",
+  },
+  {
+    year: "2025",
+    stage: "Penn State & Puerto Rico",
+    title: "A new chapter",
+    detail:
+      "Transferred to Penn State while beginning his international chapter as a Puerto Rico–eligible athlete.",
+  },
+  {
+    year: "2026",
+    stage: "NCAA & international racing",
+    title: "Breakthrough season",
+    detail:
+      "Ran 1:45.24 for 800m, earned First-Team All-American honors, and represented Puerto Rico on the international stage.",
+  },
+];
+
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -278,8 +309,8 @@ function RepellingDotGrid() {
 
     const context = canvas.getContext("2d");
     const pointer = { x: -1000, y: -1000 };
-    const spacing = 34;
-    const repulsionRadius = 180;
+    const spacing = 40;
+    const repulsionRadius = 190;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -326,7 +357,7 @@ function RepellingDotGrid() {
           const safeDistance = Math.max(distance, 1);
           const displacedX = dotX + (distanceX / safeDistance) * push;
           const displacedY = dotY + (distanceY / safeDistance) * push;
-          const radius = 1.35 + influence * 0.8;
+          const radius = 1.65 + influence * 0.9;
 
           context.beginPath();
           context.arc(displacedX, displacedY, radius, 0, Math.PI * 2);
@@ -353,6 +384,132 @@ function RepellingDotGrid() {
   }, []);
 
   return <canvas ref={canvasRef} className="ambient-grid" aria-hidden="true" />;
+}
+
+function ProgressTimeline() {
+  const timelineRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    if (!timeline) return undefined;
+
+    let frameId;
+    const updateTimeline = () => {
+      const rect = timeline.getBoundingClientRect();
+      const anchor = window.innerHeight * 0.58;
+      const progress = Math.min(
+        1,
+        Math.max(0, (anchor - rect.top) / Math.max(rect.height, 1)),
+      );
+      timeline.style.setProperty("--journey-progress", `${progress * 100}%`);
+      frameId = undefined;
+    };
+
+    const requestUpdate = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(updateTimeline);
+    };
+
+    const stops = timeline.querySelectorAll("[data-milestone-index]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveIndex(Number(entry.target.dataset.milestoneIndex));
+          }
+        });
+      },
+      { threshold: 0.58, rootMargin: "0px 0px -20% 0px" },
+    );
+
+    stops.forEach((stop) => observer.observe(stop));
+    updateTimeline();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, []);
+
+  return (
+    <div className="journey-timeline" ref={timelineRef}>
+      <div className="timeline-rail" aria-hidden="true">
+        <span className="timeline-rail-progress" />
+        <span className="timeline-runner">NS</span>
+      </div>
+
+      <div className="timeline-stops">
+        {progressMilestones.map((milestone, index) => (
+          <article
+            key={milestone.year}
+            data-milestone-index={index}
+            className={`timeline-stop ${activeIndex === index ? "is-active" : ""}`}
+            data-reveal
+          >
+            <span className="timeline-marker" aria-hidden="true" />
+            <div className="timeline-copy">
+              <span className="timeline-year">{milestone.year}</span>
+              <span className="timeline-stage">{milestone.stage}</span>
+              <h3>{milestone.title}</h3>
+              <p>{milestone.detail}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DeveloperSupportPrompt() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  useEffect(() => {
+    const trigger = document.querySelector("[data-support-trigger]");
+    if (!trigger) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.65 },
+    );
+
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <aside
+      className={`developer-support ${isVisible && !isDismissed ? "is-visible" : ""}`}
+      aria-label="Support the developer"
+      aria-live="polite"
+    >
+      <button
+        type="button"
+        className="developer-support-close"
+        onClick={() => setIsDismissed(true)}
+        aria-label="Dismiss support prompt"
+      >
+        ×
+      </button>
+      <span className="developer-support-label">Support the dev</span>
+      <p>Enjoying the site? Reach out to help support the work behind it.</p>
+      <a
+        href="mailto:sawyerbobk563@gmail.com?subject=Support%20for%20the%20Niko%20Schultz%20website"
+        data-cursor-hover
+      >
+        Contact the developer <span aria-hidden="true">↗</span>
+      </a>
+    </aside>
+  );
 }
 
 function CustomCursor() {
@@ -430,10 +587,45 @@ export default function HomePage() {
 
     revealItems.forEach((item, index) => {
       item.style.setProperty("--reveal-delay", `${(index % 5) * 65}ms`);
+      item.style.setProperty(
+        "--reveal-shift",
+        index % 2 === 0 ? "-30px" : "30px",
+      );
       observer.observe(item);
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const sections = document.querySelectorAll("[data-section]");
+    const timers = [];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.remove("section-is-active");
+          window.requestAnimationFrame(() => {
+            entry.target.classList.add("section-is-active");
+            timers.push(
+              window.setTimeout(
+                () => entry.target.classList.remove("section-is-active"),
+                1450,
+              ),
+            );
+          });
+        });
+      },
+      { threshold: 0.2, rootMargin: "-12% 0px -58% 0px" },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => {
+      observer.disconnect();
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
 
   return (
@@ -511,8 +703,12 @@ export default function HomePage() {
       </div>
 
       {/* PERSONAL BESTS */}
-      <section id="bests" className="relative mx-auto max-w-6xl px-6 py-24">
-        <h2 className="section-heading" data-reveal>
+      <section
+        id="bests"
+        data-section
+        className="relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <h2 className="section-heading section-title" data-reveal>
           Personal Bests
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -548,7 +744,7 @@ export default function HomePage() {
       </div>
 
       {/* ABOUT */}
-      <section id="about" className="mx-auto max-w-6xl px-6 py-24">
+      <section id="about" data-section className="mx-auto max-w-6xl px-6 py-24">
         <div className="grid items-center gap-12 sm:grid-cols-2">
           <div
             className="profile-frame relative aspect-square w-full overflow-visible sm:order-2"
@@ -567,7 +763,7 @@ export default function HomePage() {
           </div>
 
           <div className="sm:order-1" data-reveal>
-            <h2 className="section-heading">About</h2>
+            <h2 className="section-heading section-title">About</h2>
 
             <p className="mt-7 text-lg leading-relaxed text-ink-soft">
               Niko Schultz is a Puerto Rico–eligible middle-distance runner
@@ -595,13 +791,38 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* PROGRESSION */}
+      <section
+        id="journey"
+        data-section
+        className="journey-section relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <div className="max-w-2xl">
+          <h2 className="section-heading section-title" data-reveal>
+            The Journey
+          </h2>
+          <p
+            className="mt-3 max-w-xl leading-relaxed text-ink-soft"
+            data-reveal
+          >
+            From high school laps in Illinois to NCAA finals and international
+            racing — scroll through the milestones that shaped the journey.
+          </p>
+        </div>
+        <ProgressTimeline />
+      </section>
+
       <div className="mx-auto max-w-6xl px-6">
         <div className="lane-divider" />
       </div>
 
       {/* RECENT NEWS */}
-      <section id="news" className="mx-auto max-w-6xl px-6 py-24">
-        <h2 className="section-heading" data-reveal>
+      <section
+        id="news"
+        data-section
+        className="relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <h2 className="section-heading section-title" data-reveal>
           Recent News
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -661,8 +882,12 @@ export default function HomePage() {
       </div>
 
       {/* GALLERY */}
-      <section id="gallery" className="mx-auto max-w-6xl px-6 py-24">
-        <h2 className="section-heading" data-reveal>
+      <section
+        id="gallery"
+        data-section
+        className="relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <h2 className="section-heading section-title" data-reveal>
           Gallery
         </h2>
         <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
@@ -699,7 +924,12 @@ export default function HomePage() {
       </div>
 
       {/* CONTACT / FOOTER */}
-      <footer id="contact" className="relative mx-auto max-w-6xl px-6 py-24">
+      <footer
+        id="contact"
+        data-section
+        data-support-trigger
+        className="relative mx-auto max-w-6xl px-6 py-24"
+      >
         <div
           className="contact-panel overflow-hidden rounded-[2rem] bg-ink px-7 py-10 text-cream shadow-[0_28px_85px_-40px_rgba(25,31,27,0.95)] sm:px-12 sm:py-14"
           data-reveal
@@ -707,8 +937,9 @@ export default function HomePage() {
           <div className="contact-glow" aria-hidden="true" />
           <div className="relative grid gap-12 sm:grid-cols-2">
             <div>
-              <span className="bib-label text-gold">Let&apos;s connect</span>
-              <h2 className="section-heading mt-5 text-cream">Get in Touch</h2>
+              <h2 className="section-heading section-title text-cream">
+                Get in Touch
+              </h2>
               <p className="mt-5 max-w-sm leading-relaxed text-cream/70">
                 For sponsorships, media, race invitations, or collaborations,
                 reach out directly.
@@ -757,17 +988,21 @@ export default function HomePage() {
         </div>
       </footer>
 
+      <DeveloperSupportPrompt />
+
       <style jsx global>{`
         html {
           scroll-behavior: smooth;
         }
         .site-shell {
           font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
-          background-image: linear-gradient(
-            115deg,
-            rgba(255, 255, 255, 0.24),
-            transparent 46%
-          );
+          background-color: #fff1be;
+          background-image: radial-gradient(
+              circle at 10% 5%,
+              rgba(255, 255, 255, 0.7),
+              transparent 30%
+            ),
+            linear-gradient(115deg, rgba(255, 255, 255, 0.28), transparent 46%);
         }
         .signature-name {
           position: relative;
@@ -810,7 +1045,7 @@ export default function HomePage() {
           width: 100vw;
           height: 100vh;
           pointer-events: none;
-          opacity: 0.62;
+          opacity: 0.72;
           -webkit-mask-image: linear-gradient(
             to bottom,
             black,
@@ -890,15 +1125,53 @@ export default function HomePage() {
 
         [data-reveal] {
           opacity: 0;
-          transform: translate3d(0, 22px, 0);
+          transform: translate3d(var(--reveal-shift, 0), 24px, 0) scale(0.985);
           transition:
-            opacity 750ms cubic-bezier(0.16, 1, 0.3, 1),
-            transform 750ms cubic-bezier(0.16, 1, 0.3, 1);
+            opacity 780ms cubic-bezier(0.16, 1, 0.3, 1),
+            transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
           transition-delay: var(--reveal-delay, 0ms);
         }
         [data-reveal].is-visible {
           opacity: 1;
-          transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        .section-title {
+          position: relative;
+          display: inline-block;
+        }
+        .section-title::after {
+          position: absolute;
+          right: 0;
+          bottom: -0.42rem;
+          left: 0;
+          height: 0.18rem;
+          border-radius: 999px;
+          background: #b76849;
+          content: "";
+          opacity: 0;
+          transform: scaleX(0);
+          transform-origin: left;
+        }
+        .section-is-active .section-title::after {
+          animation: sectionUnderline 1.35s cubic-bezier(0.16, 1, 0.3, 1)
+            forwards;
+        }
+        @keyframes sectionUnderline {
+          0% {
+            opacity: 0;
+            transform: scaleX(0) rotate(-1.5deg);
+          }
+          14% {
+            opacity: 1;
+          }
+          58% {
+            opacity: 1;
+            transform: scaleX(1) rotate(0.5deg);
+          }
+          100% {
+            opacity: 0;
+            transform: scaleX(0.78) rotate(0);
+          }
         }
         .section-kicker {
           display: flex;
@@ -1005,17 +1278,17 @@ export default function HomePage() {
           inset: 0;
           background: linear-gradient(
               90deg,
-              #f7f1e4 2%,
-              rgba(247, 241, 228, 0.94) 31%,
-              rgba(247, 241, 228, 0.25) 60%,
-              rgba(247, 241, 228, 0) 78%
+              #fff1be 2%,
+              rgba(255, 241, 190, 0.94) 31%,
+              rgba(255, 241, 190, 0.25) 60%,
+              rgba(255, 241, 190, 0) 78%
             ),
             linear-gradient(
               180deg,
-              #f7f1e4 0%,
-              rgba(247, 241, 228, 0.14) 24%,
-              rgba(247, 241, 228, 0) 62%,
-              #f7f1e4 100%
+              #fff1be 0%,
+              rgba(255, 241, 190, 0.14) 24%,
+              rgba(255, 241, 190, 0) 62%,
+              #fff1be 100%
             );
         }
         .hero-content {
@@ -1134,6 +1407,136 @@ export default function HomePage() {
           border-right: 1px solid rgba(247, 241, 228, 0.34);
           border-bottom: 1px solid rgba(247, 241, 228, 0.34);
         }
+        .journey-section {
+          overflow: hidden;
+        }
+        .journey-timeline {
+          --journey-progress: 0%;
+          position: relative;
+          margin-top: 4rem;
+        }
+        .timeline-rail {
+          position: absolute;
+          top: 4.25rem;
+          bottom: 4.25rem;
+          left: 50%;
+          width: 2px;
+          border-radius: 999px;
+          background: rgba(35, 42, 37, 0.18);
+          transform: translateX(-50%);
+        }
+        .timeline-rail-progress {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: var(--journey-progress);
+          border-radius: inherit;
+          background: linear-gradient(#b76849, #d1a83d);
+          box-shadow: 0 0 0.8rem rgba(183, 104, 73, 0.24);
+        }
+        .timeline-runner {
+          position: absolute;
+          z-index: 3;
+          top: var(--journey-progress);
+          left: 50%;
+          display: grid;
+          width: 2.45rem;
+          height: 2.45rem;
+          place-items: center;
+          border: 2px solid #fff1be;
+          border-radius: 999px;
+          background: #202720;
+          box-shadow: 0 8px 18px -10px rgba(25, 31, 27, 0.9);
+          color: #fff1be;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.64rem;
+          font-weight: 700;
+          letter-spacing: -0.1em;
+          transform: translate(-50%, -50%);
+          transition: top 70ms linear;
+        }
+        .timeline-stops {
+          position: relative;
+        }
+        .timeline-stop {
+          position: relative;
+          display: grid;
+          min-height: 15rem;
+          grid-template-columns: minmax(0, 1fr) 6rem minmax(0, 1fr);
+          align-items: center;
+        }
+        .timeline-marker {
+          z-index: 2;
+          grid-column: 2;
+          grid-row: 1;
+          justify-self: center;
+          width: 1rem;
+          height: 1rem;
+          border: 3px solid #fff1be;
+          border-radius: 999px;
+          background: #b76849;
+          box-shadow: 0 0 0 1px rgba(183, 104, 73, 0.54);
+          transition:
+            transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+            background 360ms ease,
+            box-shadow 360ms ease;
+        }
+        .timeline-copy {
+          grid-column: 3;
+          grid-row: 1;
+          max-width: 29rem;
+          padding: 1.55rem;
+          border: 1px solid rgba(35, 42, 37, 0.1);
+          border-radius: 1.35rem;
+          background: rgba(255, 252, 232, 0.7);
+          box-shadow: 0 18px 40px -35px rgba(25, 31, 27, 0.8);
+          transition:
+            transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+            background 380ms ease,
+            box-shadow 380ms ease;
+        }
+        .timeline-stop:nth-child(odd) .timeline-copy {
+          grid-column: 1;
+          text-align: right;
+        }
+        .timeline-year {
+          display: block;
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+        }
+        .timeline-stage {
+          display: block;
+          margin-top: 0.35rem;
+          color: rgba(35, 42, 37, 0.6);
+          font-size: 0.82rem;
+          font-weight: 700;
+        }
+        .timeline-copy h3 {
+          margin-top: 0.65rem;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.25rem, 2.8vw, 1.75rem);
+          line-height: 1.1;
+        }
+        .timeline-copy p {
+          margin-top: 0.7rem;
+          color: var(--ink-soft, rgba(35, 42, 37, 0.72));
+          line-height: 1.65;
+        }
+        .timeline-stop.is-active .timeline-marker {
+          background: #d1a83d;
+          box-shadow: 0 0 0 0.55rem rgba(209, 168, 61, 0.16);
+          transform: scale(1.42);
+        }
+        .timeline-stop.is-active .timeline-copy {
+          background: rgba(255, 254, 241, 0.96);
+          box-shadow: 0 24px 44px -30px rgba(25, 31, 27, 0.65);
+          transform: translateY(-0.35rem) rotate(-0.35deg);
+        }
+
         .news-table tr + tr {
           border-top: 1px solid rgba(35, 42, 37, 0.07);
         }
@@ -1214,6 +1617,78 @@ export default function HomePage() {
           color: #d1a83d;
           transform: translateX(5px);
         }
+        .developer-support {
+          position: fixed;
+          z-index: 80;
+          right: 1.25rem;
+          bottom: 1.25rem;
+          width: min(22rem, calc(100vw - 2.5rem));
+          padding: 1.25rem 3rem 1.15rem 1.25rem;
+          border: 1px solid rgba(255, 241, 190, 0.24);
+          border-radius: 1.15rem;
+          background: rgba(32, 39, 32, 0.96);
+          box-shadow: 0 24px 52px -28px rgba(25, 31, 27, 0.92);
+          color: #fff1be;
+          opacity: 0;
+          pointer-events: none;
+          transform: translate3d(0, 1.5rem, 0) scale(0.96);
+          transition:
+            opacity 380ms ease,
+            transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .developer-support.is-visible {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        .developer-support-label {
+          color: #d1a83d;
+          font-size: 0.76rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .developer-support p {
+          margin-top: 0.4rem;
+          color: rgba(255, 241, 190, 0.76);
+          font-size: 0.88rem;
+          line-height: 1.45;
+        }
+        .developer-support a {
+          display: inline-flex;
+          gap: 0.4rem;
+          margin-top: 0.8rem;
+          color: #fff1be;
+          font-size: 0.84rem;
+          font-weight: 700;
+          transition:
+            color 200ms ease,
+            transform 200ms ease;
+        }
+        .developer-support a:hover {
+          color: #d1a83d;
+          transform: translateX(3px);
+        }
+        .developer-support-close {
+          position: absolute;
+          top: 0.65rem;
+          right: 0.75rem;
+          width: 1.75rem;
+          height: 1.75rem;
+          border: 0;
+          border-radius: 999px;
+          background: rgba(255, 241, 190, 0.1);
+          color: #fff1be;
+          font-size: 1.25rem;
+          line-height: 1;
+          transition:
+            background 200ms ease,
+            transform 200ms ease;
+        }
+        .developer-support-close:hover {
+          background: rgba(255, 241, 190, 0.18);
+          transform: rotate(90deg);
+        }
 
         @media (prefers-reduced-motion: reduce) {
           *,
@@ -1239,11 +1714,11 @@ export default function HomePage() {
           .hero-background-fade {
             background: linear-gradient(
                 90deg,
-                #f7f1e4 0%,
-                rgba(247, 241, 228, 0.72) 52%,
-                rgba(247, 241, 228, 0.12) 100%
+                #fff1be 0%,
+                rgba(255, 241, 190, 0.72) 52%,
+                rgba(255, 241, 190, 0.12) 100%
               ),
-              linear-gradient(180deg, #f7f1e4 0%, transparent 30%, #f7f1e4 100%);
+              linear-gradient(180deg, #fff1be 0%, transparent 30%, #fff1be 100%);
           }
           .hero-content {
             min-height: 32rem;
@@ -1259,6 +1734,38 @@ export default function HomePage() {
           }
           .audience-card {
             width: 100%;
+          }
+          .journey-timeline {
+            margin-top: 2.5rem;
+          }
+          .timeline-rail {
+            top: 2rem;
+            bottom: 2rem;
+            left: 0.85rem;
+          }
+          .timeline-stop {
+            min-height: 0;
+            grid-template-columns: 1.7rem minmax(0, 1fr);
+            padding-bottom: 2rem;
+          }
+          .timeline-stop:last-child {
+            padding-bottom: 0;
+          }
+          .timeline-marker {
+            grid-column: 1;
+          }
+          .timeline-copy,
+          .timeline-stop:nth-child(odd) .timeline-copy {
+            grid-column: 2;
+            text-align: left;
+          }
+          .timeline-runner {
+            left: 0.85rem;
+          }
+          .developer-support {
+            right: 0.85rem;
+            bottom: 0.85rem;
+            width: calc(100vw - 1.7rem);
           }
           .gallery-caption {
             opacity: 1;
