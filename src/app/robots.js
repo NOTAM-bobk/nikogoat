@@ -1,12 +1,12 @@
-export default function robots() {
-  const siteUrl = "https://nikoschultz.com"; // Replace when the public domain changes.
+import { site } from "../lib/site";
 
+export default function robots() {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
     },
-    host: siteUrl,
-    sitemap: `${siteUrl}/sitemap.xml`,
+    host: site.url,
+    sitemap: `${site.url}/sitemap.xml`,
   };
 }

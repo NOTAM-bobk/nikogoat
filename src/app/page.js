@@ -245,49 +245,6 @@ const achievements = [
   },
 ];
 
-const siteStructuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://nikoschultz.com/#website",
-      name: "Niko Schultz",
-      url: "https://nikoschultz.com/",
-      description:
-        "Niko Schultz: Puerto Rico-eligible 800m runner, Penn State student-athlete, creator, race results, videos, and athlete updates.",
-      inLanguage: "en-US",
-    },
-    {
-      "@type": "Person",
-      "@id": "https://nikoschultz.com/#niko-schultz",
-      name: "Niko Schultz",
-      url: "https://nikoschultz.com/",
-      jobTitle: "800m Runner",
-      description:
-        "Puerto Rico-eligible 800m runner, Penn State student-athlete, NCAA First-Team All-American, and 1:45.24 performer.",
-      homeLocation: {
-        "@type": "Place",
-        name: "Joliet, Illinois, United States",
-      },
-      alumniOf: [
-        { "@type": "CollegeOrUniversity", name: "Penn State" },
-        {
-          "@type": "CollegeOrUniversity",
-          name: "University of Nebraska-Lincoln",
-        },
-      ],
-      sameAs: [
-        "https://worldathletics.org/athletes/puerto-rico/niko-schultz-14972544",
-        "https://www.tfrrs.org/athletes/9226487/Penn_State/Niko_Schultz.html",
-        "https://www.youtube.com/@nikoschultz4306",
-        "https://www.instagram.com/nikoschultzzz",
-        "https://www.tiktok.com/@nikojschultz",
-        "https://linktr.ee/nikoschultzzz",
-      ],
-    },
-  ],
-};
-
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -592,8 +549,8 @@ function SiteLoader() {
 
 function TypedName({ start }) {
   const fullName = "Niko Schultz";
-  const [typedName, setTypedName] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+  const [typedName, setTypedName] = useState(fullName);
+  const [isComplete, setIsComplete] = useState(true);
 
   useEffect(() => {
     if (!start) return undefined;
@@ -610,6 +567,9 @@ function TypedName({ start }) {
       setIsComplete(true);
       return () => timers.forEach((timer) => window.clearTimeout(timer));
     }
+
+    setTypedName("");
+    setIsComplete(false);
 
     let characterIndex = 0;
     const typeName = () => {
@@ -1105,10 +1065,6 @@ export default function HomePage() {
 
   return (
     <main className="site-shell relative isolate overflow-hidden bg-cream text-ink">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteStructuredData) }}
-      />
       {isLoading && <SiteLoader />}
       <VisitorAnalytics start={!isLoading} />
       <ScrollProgress />

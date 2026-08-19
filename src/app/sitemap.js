@@ -1,12 +1,9 @@
-export default function sitemap() {
-  const siteUrl = "https://nikoschultz.com"; // Replace when the public domain changes.
+import { site } from "../lib/site";
 
+export default function sitemap() {
   return [
     {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
+      url: `${site.url}/`,
     },
   ];
 }
