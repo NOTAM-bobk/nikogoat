@@ -1659,10 +1659,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-start justify-between gap-4 px-1 text-sm text-ink-soft sm:flex-row sm:items-center">
-          <span>
-            © {new Date().getFullYear()} Niko Schultz. All rights reserved.
-          </span>
+        <div className="mt-8 flex justify-end px-1 text-sm text-ink-soft">
           <span className="font-mono text-xs tracking-[0.18em]">
             800M · PENN STATE
           </span>
@@ -1691,11 +1688,27 @@ export default function HomePage() {
           font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
           background-color: #f4efe4;
           background-image: radial-gradient(
-              circle at 10% 5%,
-              rgba(255, 255, 255, 0.48),
-              transparent 30%
+              ellipse 58% 38% at 6% 0%,
+              rgba(255, 253, 245, 0.96),
+              transparent 72%
             ),
-            linear-gradient(115deg, rgba(255, 255, 255, 0.17), transparent 46%);
+            radial-gradient(
+              ellipse 52% 42% at 96% 8%,
+              rgba(220, 179, 119, 0.16),
+              transparent 72%
+            ),
+            radial-gradient(
+              ellipse 44% 36% at 50% 52%,
+              rgba(150, 181, 163, 0.1),
+              transparent 76%
+            ),
+            linear-gradient(
+              132deg,
+              rgba(255, 255, 255, 0.4) 0%,
+              rgba(244, 239, 228, 0.12) 42%,
+              rgba(224, 196, 151, 0.09) 100%
+            );
+          background-attachment: fixed;
         }
         .site-loader {
           position: fixed;
@@ -1896,56 +1909,58 @@ export default function HomePage() {
           width: 30rem;
           aspect-ratio: 1;
           border-radius: 999px;
-          filter: blur(24px);
-          opacity: 0.17;
+          filter: blur(42px);
+          opacity: 0.12;
           pointer-events: none;
-          animation: floatOrb 11s ease-in-out infinite alternate;
+          will-change: transform;
+          animation: floatOrb 22s cubic-bezier(0.45, 0.05, 0.25, 1) infinite
+            alternate;
         }
         .ambient-orb-one {
           top: 7rem;
           right: -14rem;
-          background: #d1a83d;
+          background: #dfb578;
         }
         .ambient-orb-two {
           top: 64rem;
           left: -16rem;
-          background: #778c71;
+          background: #9eb7a6;
           animation-delay: -5s;
         }
         .ambient-orb-three {
           top: 112rem;
           right: -17rem;
           width: 25rem;
-          background: #b76849;
+          background: #d69a82;
           animation-delay: -3s;
         }
         .ambient-orb-four {
           top: 151rem;
           left: -15rem;
           width: 28rem;
-          background: #8e6f9c;
+          background: #bda2c1;
           animation-delay: -8s;
         }
         .ambient-orb-five {
           top: 204rem;
           right: -16rem;
           width: 32rem;
-          background: #5d8f8a;
+          background: #96bdb5;
           animation-delay: -6s;
         }
         .ambient-orb-six {
           top: 250rem;
           left: -18rem;
           width: 25rem;
-          background: #d18d45;
+          background: #dda866;
           animation-delay: -10s;
         }
         @keyframes floatOrb {
           from {
-            transform: translate3d(0, 0, 0) scale(0.92);
+            transform: translate3d(0, 0, 0) scale(0.96);
           }
           to {
-            transform: translate3d(2rem, -1.5rem, 0) scale(1.06);
+            transform: translate3d(1.15rem, -0.9rem, 0) scale(1.025);
           }
         }
 
@@ -2771,12 +2786,12 @@ export default function HomePage() {
           padding: 1.25rem;
           border-right: 1px solid rgba(35, 42, 37, 0.13);
           border-bottom: 1px solid rgba(35, 42, 37, 0.13);
-          background: rgba(255, 252, 241, 0.35);
-          color: #202720;
+          color: #fffaf0;
           text-decoration: none;
+          box-shadow: inset 0 1px rgba(255, 255, 255, 0.2);
           transition:
-            color 300ms ease,
-            background 300ms ease,
+            filter 300ms ease,
+            box-shadow 300ms ease,
             transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
         }
         .follow-card::before {
@@ -2796,12 +2811,12 @@ export default function HomePage() {
         }
         .follow-card:hover {
           z-index: 1;
-          background: #202720;
-          color: #f4efe4;
+          filter: brightness(1.08) saturate(1.08);
+          box-shadow: 0 20px 34px -24px rgba(25, 31, 27, 0.68);
           transform: translateY(-0.35rem);
         }
         .follow-card:hover::before {
-          opacity: 0.16;
+          opacity: 0.24;
           transform: scale(3.2);
         }
         .follow-card-index,
@@ -2835,30 +2850,29 @@ export default function HomePage() {
           margin-top: 0.55rem;
           font-size: 0.7rem;
           font-weight: 700;
-          opacity: 0.62;
+          opacity: 0.78;
         }
         .follow-youtube {
-          color: #b43f37;
+          background: linear-gradient(135deg, #d84a42, #af282e);
         }
         .follow-instagram {
-          color: #a34d69;
+          background: linear-gradient(135deg, #d05982, #8c3d85 56%, #f09455);
         }
         .follow-tiktok {
-          color: #202720;
+          background: linear-gradient(135deg, #1d2b29, #17201f 60%, #3f7770);
         }
         .follow-strava {
-          color: #d46c3e;
+          background: linear-gradient(135deg, #e27b43, #bf4e31);
         }
         .follow-linktree {
-          color: #4d8f72;
+          background: linear-gradient(135deg, #558e70, #27664f);
         }
         .follow-card.is-placeholder {
           border-style: dashed;
-          opacity: 0.72;
+          opacity: 0.84;
         }
         .follow-card.is-placeholder:hover {
-          color: #d46c3e;
-          background: rgba(212, 108, 62, 0.08);
+          opacity: 1;
         }
         .video-channel-link {
           display: inline-flex;
@@ -3214,6 +3228,13 @@ export default function HomePage() {
           }
         }
         @media (max-width: 639px) {
+          .site-shell {
+            background-attachment: scroll;
+          }
+          .ambient-orb {
+            filter: blur(34px);
+            opacity: 0.1;
+          }
           html,
           body {
             overflow-x: clip;
