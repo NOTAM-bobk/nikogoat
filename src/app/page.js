@@ -16,11 +16,11 @@ const schedule = [
 
 const galleryImages = [
   { src: "/images/IMG_2203.jpeg", alt: "Niko Schultz crossing the finish line" },
-  { src: "/images/IMG_2208.jpeg", alt: "Niko Schultz in the starting blocks" },
-  { src: "/images/gallery-03.jpg", alt: "Niko Schultz training on the track" },
-  { src: "/images/gallery-04.jpg", alt: "Niko Schultz celebrating a win" },
-  { src: "/images/gallery-05.jpg", alt: "Niko Schultz mid-race, lane three" },
-  { src: "/images/gallery-06.jpg", alt: "Niko Schultz portrait in team kit" },
+  { src: "/images/IMG_2211.jpeg", alt: "Niko Schultz in the starting blocks" },
+  { src: "/images/IMG_2207.jpeg", alt: "Niko Schultz training on the track" },
+  { src: "/images/IMG_2208.jpeg", alt: "Niko Schultz celebrating a win" },
+  { src: "/images/IMG_2209.jpeg", alt: "Niko Schultz mid-race, lane three" },
+  { src: "/images/IMG_2210.jpeg", alt: "Niko Schultz portrait in team kit" },
 ];
 
 export default function HomePage() {
