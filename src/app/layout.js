@@ -1,23 +1,23 @@
-import { Big_Shoulders_Display, Plus_Jakarta_Sans, Space_Mono } from "next/font/google";
+import { DynaPuff, Rubik_Spray_Paint, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-// Display face — condensed, stadium-signage energy for headlines & big numbers
-const bigShoulders = Big_Shoulders_Display({
+// Signature display face — used exclusively for Niko Schultz's name.
+const rubikSprayPaint = Rubik_Spray_Paint({
   subsets: ["latin"],
-  weight: ["500", "700", "800", "900"],
+  weight: "400",
+  variable: "--font-signature",
+  display: "swap",
+});
+
+// Friendly rounded display face — headlines and secondary expressive copy.
+const dynaPuff = DynaPuff({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display",
   display: "swap",
 });
 
-// Body face — friendly, rounded, easy to read at length
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
-  display: "swap",
-});
-
-// Utility/data face — for split times, stats, scoreboard-style numbers
+// Utility/data face — for split times, stats, and small labels.
 const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -74,8 +74,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${bigShoulders.variable} ${plusJakarta.variable} ${spaceMono.variable}`}>
-      <body className="bg-cream text-ink font-body antialiased">{children}</body>
+    <html
+      lang="en"
+      className={`${rubikSprayPaint.variable} ${dynaPuff.variable} ${spaceMono.variable}`}
+    >
+      <body className="bg-cream text-ink font-body antialiased">
+        {children}
+      </body>
     </html>
   );
 }
