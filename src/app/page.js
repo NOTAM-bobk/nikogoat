@@ -123,6 +123,12 @@ const sponsors = [
   },
 ];
 
+const futureGoals = [
+  "Future Olympian",
+  "Future Entrepreneur",
+  "Future 1 Million Followers",
+];
+
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -205,12 +211,14 @@ function TrackTimeCounter({ value }) {
   );
 }
 
-function AnimatedAudienceCounter({ value }) {
+function AnimatedAudienceCounter({ value, start }) {
   const counterRef = useRef(null);
   const hasStarted = useRef(false);
   const [display, setDisplay] = useState("0.0K");
 
   useEffect(() => {
+    if (!start) return undefined;
+
     const node = counterRef.current;
     if (!node) return undefined;
 
@@ -253,7 +261,7 @@ function AnimatedAudienceCounter({ value }) {
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [value]);
+  }, [start, value]);
 
   return (
     <span
@@ -270,11 +278,72 @@ function formatNumber(value) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-function TypedName() {
+function ScrollProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let frameId;
+    const updateProgress = () => {
+      const scrollableHeight = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1,
+      );
+      setProgress(Math.min(1, Math.max(0, window.scrollY / scrollableHeight)));
+      frameId = undefined;
+    };
+    const requestUpdate = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(updateProgress);
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, []);
+
+  return (
+    <div
+      className={`scroll-progress ${progress > 0.015 ? "is-active" : ""}`}
+      aria-hidden="true"
+    >
+      <span style={{ transform: `scaleX(${progress})` }} />
+    </div>
+  );
+}
+
+function SiteLoader() {
+  return (
+    <div
+      className="site-loader"
+      role="status"
+      aria-label="Loading the Niko Schultz website"
+    >
+      <div className="site-loader-inner">
+        <span className="site-loader-name">Niko Schultz</span>
+        <div className="loader-line loader-line-long" />
+        <div className="loader-line loader-line-medium" />
+        <div className="loader-stat-row">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TypedName({ start }) {
   const fullName = "Niko Schultz";
   const [typedName, setTypedName] = useState("");
 
   useEffect(() => {
+    if (!start) return undefined;
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setTypedName(fullName);
       return undefined;
@@ -292,7 +361,7 @@ function TypedName() {
 
     const startDelay = window.setTimeout(typeName, 280);
     return () => window.clearTimeout(startDelay);
-  }, []);
+  }, [start]);
 
   const [firstName, lastName] = typedName.split(" ");
 
@@ -448,7 +517,9 @@ function ProgressTimeline() {
     <div className="journey-timeline" ref={timelineRef}>
       <div className="timeline-rail" aria-hidden="true">
         <span className="timeline-rail-progress" />
-        <span className="timeline-runner">NS</span>
+        <span className="timeline-runner">
+          <Image src="/images/ns.png" alt="" fill sizes="40px" priority />
+        </span>
       </div>
 
       <div className="timeline-stops">
@@ -495,6 +566,19 @@ function SponsorCarousel() {
   );
 }
 
+function FutureGoals() {
+  return (
+    <section className="future-goals" aria-label="Future goals">
+      <span className="future-goals-label">On the horizon</span>
+      <div className="future-goals-list">
+        {futureGoals.map((goal) => (
+          <span key={goal}>{goal}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function DeveloperSupportPrompt() {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
@@ -532,13 +616,23 @@ function DeveloperSupportPrompt() {
         ×
       </button>
       <span className="developer-support-label">Support the dev</span>
-      <p>Enjoying the site? Reach out to help support the work behind it.</p>
-      <a
-        href="mailto:sawyerbobk563@gmail.com?subject=Support%20for%20the%20Niko%20Schultz%20website"
-        data-cursor-hover
-      >
-        Contact the developer <span aria-hidden="true">↗</span>
-      </a>
+      <p>Enjoying the site? Help keep this fan-built project moving forward.</p>
+      <div className="developer-support-actions">
+        <a
+          href="https://gogetfunding.com/niko-schultz-fan-club-website/#campaign-story"
+          target="_blank"
+          rel="noreferrer"
+          data-cursor-hover
+        >
+          Support on GoGetFunding <span aria-hidden="true">↗</span>
+        </a>
+        <a
+          href="mailto:sawyerbobk563@gmail.com?subject=Support%20for%20the%20Niko%20Schultz%20website"
+          data-cursor-hover
+        >
+          Contact the developer <span aria-hidden="true">↗</span>
+        </a>
+      </div>
     </aside>
   );
 }
@@ -593,7 +687,19 @@ function CustomCursor() {
 }
 
 export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : 1050;
+    const timer = window.setTimeout(() => setIsLoading(false), delay);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return undefined;
+
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -626,9 +732,11 @@ export default function HomePage() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [isLoading]);
 
   useEffect(() => {
+    if (isLoading) return undefined;
+
     const sections = document.querySelectorAll("[data-section]");
     const timers = [];
 
@@ -657,15 +765,21 @@ export default function HomePage() {
       observer.disconnect();
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, []);
+  }, [isLoading]);
 
   return (
     <main className="site-shell relative isolate overflow-hidden bg-cream text-ink">
+      {isLoading && <SiteLoader />}
+      <ScrollProgress />
       <CustomCursor />
 
       <RepellingDotGrid />
       <div className="ambient-orb ambient-orb-one" aria-hidden="true" />
       <div className="ambient-orb ambient-orb-two" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-three" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-four" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-five" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-six" aria-hidden="true" />
 
       {/* HERO */}
       <section
@@ -685,7 +799,10 @@ export default function HomePage() {
                 data-cursor-hover
               >
                 <span className="audience-platform">{stat.platform}</span>
-                <AnimatedAudienceCounter value={stat.followers} />
+                <AnimatedAudienceCounter
+                  value={stat.followers}
+                  start={!isLoading}
+                />
                 <span className="audience-label">
                   followers · {stat.handle}
                 </span>
@@ -709,7 +826,7 @@ export default function HomePage() {
         <div className="hero-content relative z-10" data-reveal>
           <span className="bib-label">800m Athlete · Puerto Rico</span>
 
-          <TypedName />
+          <TypedName start={!isLoading} />
 
           <p className="mt-7 max-w-md text-balance font-body text-lg leading-relaxed text-ink-soft">
             Niko Schultz is a Puerto Rico–eligible 800m runner, Penn State
@@ -823,6 +940,7 @@ export default function HomePage() {
       </section>
 
       <SponsorCarousel />
+      <FutureGoals />
 
       {/* PROGRESSION */}
       <section
@@ -1018,6 +1136,18 @@ export default function HomePage() {
             800M · PENN STATE
           </span>
         </div>
+        <p className="footer-legal">
+          By viewing this page, you agree to the{" "}
+          <a
+            href="https://www.termsfeed.com/blog/sample-terms-and-conditions-template/"
+            target="_blank"
+            rel="noreferrer"
+            data-cursor-hover
+          >
+            Terms of Service
+          </a>
+          . Built &amp; Designed by <span>{"{ss}"}</span>
+        </p>
       </footer>
 
       <DeveloperSupportPrompt />
@@ -1035,6 +1165,96 @@ export default function HomePage() {
               transparent 30%
             ),
             linear-gradient(115deg, rgba(255, 255, 255, 0.17), transparent 46%);
+        }
+        .site-loader {
+          position: fixed;
+          z-index: 200;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          background: #f7f1e4;
+        }
+        .site-loader-inner {
+          display: grid;
+          width: min(32rem, calc(100vw - 3rem));
+          gap: 0.95rem;
+        }
+        .site-loader-name {
+          margin-bottom: 0.45rem;
+          color: rgba(35, 42, 37, 0.42);
+          font-family: var(--font-signature), cursive;
+          font-size: clamp(2rem, 7vw, 4.25rem);
+          letter-spacing: -0.06em;
+        }
+        .loader-line,
+        .loader-stat-row span {
+          overflow: hidden;
+          border-radius: 999px;
+          background: rgba(35, 42, 37, 0.1);
+          animation: skeletonPulse 850ms ease-in-out infinite alternate;
+        }
+        .loader-line {
+          height: 0.8rem;
+        }
+        .loader-line-long {
+          width: 100%;
+        }
+        .loader-line-medium {
+          width: 64%;
+          animation-delay: -320ms;
+        }
+        .loader-stat-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.75rem;
+          margin-top: 1rem;
+        }
+        .loader-stat-row span {
+          height: 7rem;
+        }
+        .loader-stat-row span:nth-child(2) {
+          animation-delay: -210ms;
+        }
+        .loader-stat-row span:nth-child(3) {
+          animation-delay: -480ms;
+        }
+        @keyframes skeletonPulse {
+          from {
+            opacity: 0.54;
+            transform: scaleX(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: scaleX(1);
+          }
+        }
+        .scroll-progress {
+          position: fixed;
+          z-index: 150;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 4px;
+          overflow: hidden;
+          background: rgba(247, 241, 228, 0.38);
+          opacity: 0;
+          transform: translateY(-100%);
+          transition:
+            opacity 240ms ease,
+            transform 240ms ease;
+        }
+        .scroll-progress.is-active {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .scroll-progress span {
+          display: block;
+          width: 100%;
+          height: 100%;
+          transform-origin: left center;
+          background: linear-gradient(90deg, #b76849, #d1a83d 58%, #66897a);
+          box-shadow: 0 0 1rem rgba(183, 104, 73, 0.56);
+          transition: transform 80ms linear;
         }
         .signature-name {
           position: relative;
@@ -1100,6 +1320,34 @@ export default function HomePage() {
           left: -16rem;
           background: #778c71;
           animation-delay: -5s;
+        }
+        .ambient-orb-three {
+          top: 112rem;
+          right: -17rem;
+          width: 25rem;
+          background: #b76849;
+          animation-delay: -3s;
+        }
+        .ambient-orb-four {
+          top: 151rem;
+          left: -15rem;
+          width: 28rem;
+          background: #8e6f9c;
+          animation-delay: -8s;
+        }
+        .ambient-orb-five {
+          top: 204rem;
+          right: -16rem;
+          width: 32rem;
+          background: #5d8f8a;
+          animation-delay: -6s;
+        }
+        .ambient-orb-six {
+          top: 250rem;
+          left: -18rem;
+          width: 25rem;
+          background: #d18d45;
+          animation-delay: -10s;
         }
         @keyframes floatOrb {
           from {
@@ -1364,6 +1612,45 @@ export default function HomePage() {
           transform: scale(1.06);
           filter: saturate(1.05);
         }
+        .future-goals {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1.5rem;
+          margin: 0 auto;
+          padding: 3.4rem max(1.5rem, calc((100vw - 72rem) / 2));
+          border-bottom: 1px solid rgba(35, 42, 37, 0.12);
+          background: rgba(35, 42, 37, 0.96);
+          color: #f7f1e4;
+        }
+        .future-goals-label {
+          flex: 0 0 auto;
+          color: #d1a83d;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.66rem;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+        .future-goals-list {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 0.55rem 1.45rem;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.35rem, 3.1vw, 2.35rem);
+          line-height: 1.1;
+        }
+        .future-goals-list span:not(:last-child)::after {
+          display: inline-block;
+          width: 0.37rem;
+          height: 0.37rem;
+          margin-left: 1.45rem;
+          vertical-align: middle;
+          border-radius: 999px;
+          background: #b76849;
+          content: "";
+        }
         .sponsor-carousel {
           display: grid;
           grid-template-columns: minmax(7rem, 1fr) minmax(0, 5fr);
@@ -1396,9 +1683,6 @@ export default function HomePage() {
           gap: clamp(2.25rem, 7vw, 7rem);
           padding: 1.35rem 0;
           animation: sponsorMarquee 26s linear infinite;
-        }
-        .sponsor-carousel:hover .sponsor-track {
-          animation-play-state: paused;
         }
         .sponsor-wordmark {
           display: inline-flex;
@@ -1537,6 +1821,9 @@ export default function HomePage() {
           background: linear-gradient(#b76849, #d1a83d);
           box-shadow: 0 0 0.8rem rgba(183, 104, 73, 0.24);
         }
+        .timeline-runner img {
+          object-fit: cover;
+        }
         .timeline-runner {
           position: absolute;
           z-index: 3;
@@ -1546,6 +1833,7 @@ export default function HomePage() {
           width: 2.45rem;
           height: 2.45rem;
           place-items: center;
+          overflow: hidden;
           border: 2px solid #f7f1e4;
           border-radius: 999px;
           background: #202720;
@@ -1756,10 +2044,14 @@ export default function HomePage() {
           font-size: 0.88rem;
           line-height: 1.45;
         }
+        .developer-support-actions {
+          display: grid;
+          gap: 0.52rem;
+          margin-top: 0.85rem;
+        }
         .developer-support a {
           display: inline-flex;
           gap: 0.4rem;
-          margin-top: 0.8rem;
           color: #fff1be;
           font-size: 0.84rem;
           font-weight: 700;
@@ -1790,6 +2082,25 @@ export default function HomePage() {
         .developer-support-close:hover {
           background: rgba(255, 241, 190, 0.18);
           transform: rotate(90deg);
+        }
+        .footer-legal {
+          margin-top: 1.2rem;
+          padding: 1rem 0.25rem 0;
+          border-top: 1px solid rgba(35, 42, 37, 0.1);
+          color: rgba(35, 42, 37, 0.52);
+          font-size: 0.72rem;
+          line-height: 1.5;
+        }
+        .footer-legal a {
+          color: #b76849;
+          font-weight: 700;
+          text-decoration: underline;
+          text-underline-offset: 0.2rem;
+        }
+        .footer-legal span {
+          color: #202720;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-weight: 700;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1836,6 +2147,18 @@ export default function HomePage() {
           }
           .audience-card {
             width: 100%;
+          }
+          .future-goals {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 2.6rem 1.5rem;
+          }
+          .future-goals-list {
+            justify-content: flex-start;
+          }
+          .future-goals-list span:not(:last-child)::after {
+            margin-left: 0.85rem;
           }
           .sponsor-carousel {
             grid-template-columns: 1fr;
