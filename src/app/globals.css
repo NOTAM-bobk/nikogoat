@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: theme("colors.clay.DEFAULT");
+    color: theme("colors.cream.DEFAULT");
+  }
+
+  /* Visible keyboard focus everywhere — accessibility floor */
+  :focus-visible {
+    outline: 2px solid theme("colors.clay.DEFAULT");
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    line-height: 0.95;
+  }
+}
+
+@layer components {
+  /* Signature divider — reads as lane markings on a track, used between
+     sections instead of a plain <hr>. */
+  .lane-divider {
+    height: 4px;
+    width: 100%;
+    background-image: repeating-linear-gradient(
+      to right,
+      theme("colors.clay.DEFAULT") 0 28px,
+      transparent 28px 44px,
+      theme("colors.sage.DEFAULT") 44px 72px,
+      transparent 72px 88px
+    );
+    opacity: 0.9;
+    border-radius: 999px;
+  }
+
+  /* Scoreboard-style stat chip for personal-best split times */
+  .split-chip {
+    @apply flex flex-col items-start gap-1 rounded-2xl bg-ink px-6 py-5 text-cream shadow-[0_6px_0_0_theme(colors.clay.dark)];
+  }
+
+  .split-time {
+    @apply font-mono text-4xl sm:text-5xl font-bold tracking-tight text-cream;
+  }
+
+  /* Bib-number style eyebrow label */
+  .bib-label {
+    @apply inline-flex items-center gap-2 rounded-full border-2 border-ink/80 bg-cream px-4 py-1 font-mono text-xs uppercase tracking-widest2 text-ink;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-clay px-7 py-3 font-body text-sm font-semibold uppercase tracking-wide text-cream transition-transform duration-200 hover:-translate-y-0.5 hover:bg-clay-dark;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-ink px-7 py-3 font-body text-sm font-semibold uppercase tracking-wide text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-ink hover:text-cream;
+  }
+
+  .section-heading {
+    @apply font-display text-4xl sm:text-5xl font-extrabold uppercase text-ink;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Respect reduced-motion preference — future animation passes must honor this */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
