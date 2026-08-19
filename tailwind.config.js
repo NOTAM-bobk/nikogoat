@@ -8,9 +8,9 @@ module.exports = {
       colors: {
         // Design tokens — Niko Schultz / 800m portfolio
         cream: {
-          DEFAULT: "#F6F1E7", // primary background
-          soft: "#EFE7D8",    // card / section alt background
-          line: "#E2D6BE",    // hairline / divider on cream
+          DEFAULT: "#F9F0D4", // primary background, slightly warmer yellow
+          soft: "#F1E7C9",    // card / section alt background
+          line: "#E6D9B6",    // hairline / divider on cream
         },
         ink: {
           DEFAULT: "#1E2622", // near-black, slight green cast — body copy

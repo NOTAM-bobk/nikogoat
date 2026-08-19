@@ -208,6 +208,49 @@ const futureGoals = [
   "Future 1 Million Followers",
 ];
 
+const siteStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://nikoschultz.com/#website",
+      name: "Niko Schultz",
+      url: "https://nikoschultz.com/",
+      description:
+        "Niko Schultz: Puerto Rico-eligible 800m runner, Penn State student-athlete, creator, race results, videos, and athlete updates.",
+      inLanguage: "en-US",
+    },
+    {
+      "@type": "Person",
+      "@id": "https://nikoschultz.com/#niko-schultz",
+      name: "Niko Schultz",
+      url: "https://nikoschultz.com/",
+      jobTitle: "800m Runner",
+      description:
+        "Puerto Rico-eligible 800m runner, Penn State student-athlete, NCAA First-Team All-American, and 1:45.24 performer.",
+      homeLocation: {
+        "@type": "Place",
+        name: "Joliet, Illinois, United States",
+      },
+      alumniOf: [
+        { "@type": "CollegeOrUniversity", name: "Penn State" },
+        {
+          "@type": "CollegeOrUniversity",
+          name: "University of Nebraska-Lincoln",
+        },
+      ],
+      sameAs: [
+        "https://worldathletics.org/athletes/puerto-rico/niko-schultz-14972544",
+        "https://www.tfrrs.org/athletes/9226487/Penn_State/Niko_Schultz.html",
+        "https://www.youtube.com/@nikoschultz4306",
+        "https://www.instagram.com/nikoschultzzz",
+        "https://www.tiktok.com/@nikojschultz",
+        "https://linktr.ee/nikoschultzzz",
+      ],
+    },
+  ],
+};
+
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -395,6 +438,28 @@ function ScrollProgress() {
   );
 }
 
+function VisitorAnalytics({ start }) {
+  const endpoint = process.env.NEXT_PUBLIC_VISITOR_COUNTER_ENDPOINT;
+
+  useEffect(() => {
+    if (!start || !endpoint) return undefined;
+
+    void fetch(endpoint, {
+      method: "POST",
+      mode: "cors",
+      credentials: "omit",
+      keepalive: true,
+      headers: { "Content-Type": "text/plain" },
+    }).catch(() => {
+      // Analytics must never affect the visitor experience.
+    });
+
+    return undefined;
+  }, [endpoint, start]);
+
+  return null;
+}
+
 function SiteLoader() {
   return (
     <div
@@ -419,13 +484,22 @@ function SiteLoader() {
 function TypedName({ start }) {
   const fullName = "Niko Schultz";
   const [typedName, setTypedName] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     if (!start) return undefined;
 
+    const timers = [];
+    const schedule = (callback, delay) => {
+      const timer = window.setTimeout(callback, delay);
+      timers.push(timer);
+      return timer;
+    };
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setTypedName(fullName);
-      return undefined;
+      setIsComplete(true);
+      return () => timers.forEach((timer) => window.clearTimeout(timer));
     }
 
     let characterIndex = 0;
@@ -434,21 +508,27 @@ function TypedName({ start }) {
       setTypedName(fullName.slice(0, characterIndex));
 
       if (characterIndex < fullName.length) {
-        window.setTimeout(typeName, characterIndex === 5 ? 210 : 105);
+        schedule(typeName, characterIndex === 5 ? 210 : 105);
+      } else {
+        schedule(() => setIsComplete(true), 220);
       }
     };
 
-    const startDelay = window.setTimeout(typeName, 280);
-    return () => window.clearTimeout(startDelay);
+    schedule(typeName, 280);
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [start]);
 
   const [firstName, lastName] = typedName.split(" ");
 
   return (
     <h1
-      className="signature-name mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl"
+      className={`signature-name mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl ${isComplete ? "is-complete" : ""}`}
       aria-label={fullName}
     >
+      <svg className="name-circle" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M8,48 C5,19 26,4 54,7 C87,7 98,29 93,55 C91,83 67,98 38,94 C12,90 3,70 8,48 Z" />
+        <path d="M10,50 C6,23 27,7 55,9 C84,8 96,30 91,57 C89,81 66,96 39,92 C15,88 5,69 10,50 Z" />
+      </svg>
       <span>{firstName || "\u00A0"}</span>
       <br />
       <span>{lastName || "\u00A0"}</span>
@@ -848,7 +928,12 @@ export default function HomePage() {
 
   return (
     <main className="site-shell relative isolate overflow-hidden bg-cream text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteStructuredData) }}
+      />
       {isLoading && <SiteLoader />}
+      <VisitorAnalytics start={!isLoading} />
       <ScrollProgress />
       <CustomCursor />
 
@@ -1037,6 +1122,10 @@ export default function HomePage() {
         <ProgressTimeline />
       </section>
 
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="lane-divider journey-follow-divider" />
+      </div>
+
       {/* FOLLOW */}
       <section
         id="follow"
@@ -1055,9 +1144,16 @@ export default function HomePage() {
               Training, racing, and the work between the finish lines.
             </p>
           </div>
-          <span className="follow-prompt" data-reveal>
-            Choose a platform ↗
-          </span>
+          <a
+            className="follow-prompt"
+            href="https://worldathletics.org/athletes/puerto-rico/niko-schultz-14972544"
+            target="_blank"
+            rel="noreferrer"
+            data-reveal
+            data-cursor-hover
+          >
+            World Athletics profile ↗
+          </a>
         </div>
         <div className="follow-grid mt-10">
           {followLinks.map((link) => (
@@ -1346,7 +1442,7 @@ export default function HomePage() {
         }
         .site-shell {
           font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
-          background-color: #f7f1e4;
+          background-color: #f9f0d4;
           background-image: radial-gradient(
               circle at 10% 5%,
               rgba(255, 255, 255, 0.48),
@@ -1360,7 +1456,7 @@ export default function HomePage() {
           inset: 0;
           display: grid;
           place-items: center;
-          background: #f7f1e4;
+          background: #f9f0d4;
         }
         .site-loader-inner {
           display: grid;
@@ -1424,7 +1520,7 @@ export default function HomePage() {
           left: 0;
           height: 4px;
           overflow: hidden;
-          background: rgba(247, 241, 228, 0.38);
+          background: rgba(249, 240, 212, 0.38);
           opacity: 0;
           transform: translateY(-100%);
           transition:
@@ -1453,8 +1549,59 @@ export default function HomePage() {
           text-shadow: 3px 3px 0 rgba(209, 168, 61, 0.22);
         }
         .signature-name > span:not(.typing-caret) {
+          position: relative;
+          z-index: 1;
           display: inline-block;
           min-width: 2.25ch;
+        }
+        .name-circle {
+          position: absolute;
+          z-index: 0;
+          top: -0.2em;
+          left: -0.16em;
+          width: 1.18em;
+          height: 2.17em;
+          overflow: visible;
+          fill: none;
+          pointer-events: none;
+          transform: rotate(-3deg);
+        }
+        .name-circle path {
+          stroke: #b76849;
+          stroke-linecap: round;
+          stroke-width: 2.2;
+          stroke-dasharray: 290;
+          stroke-dashoffset: 290;
+          opacity: 0;
+        }
+        .signature-name.is-complete .name-circle path:first-child {
+          animation: drawNameCircle 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .signature-name.is-complete .name-circle path:last-child {
+          animation: drawNameCircle 700ms 190ms cubic-bezier(0.16, 1, 0.3, 1)
+            forwards;
+          opacity: 0.48;
+        }
+        .signature-name.is-complete .typing-caret {
+          animation: fadeCaret 260ms ease forwards;
+        }
+        @keyframes drawNameCircle {
+          0% {
+            stroke-dashoffset: 290;
+            opacity: 0;
+          }
+          12% {
+            opacity: 0.92;
+          }
+          100% {
+            stroke-dashoffset: 0;
+            opacity: 0.84;
+          }
+        }
+        @keyframes fadeCaret {
+          to {
+            opacity: 0;
+          }
         }
         .typing-caret {
           display: inline-block;
@@ -1759,24 +1906,24 @@ export default function HomePage() {
           inset: 0;
           background: radial-gradient(
               circle at 79% 42%,
-              rgba(247, 241, 228, 0) 0 20%,
-              rgba(247, 241, 228, 0.28) 48%,
-              #f7f1e4 92%
+              rgba(249, 240, 212, 0) 0 20%,
+              rgba(249, 240, 212, 0.28) 48%,
+              #f9f0d4 92%
             ),
             linear-gradient(
               90deg,
-              #f7f1e4 0%,
-              rgba(247, 241, 228, 0.92) 27%,
-              rgba(247, 241, 228, 0.5) 47%,
-              rgba(247, 241, 228, 0.1) 72%,
-              rgba(247, 241, 228, 0) 100%
+              #f9f0d4 0%,
+              rgba(249, 240, 212, 0.92) 27%,
+              rgba(249, 240, 212, 0.5) 47%,
+              rgba(249, 240, 212, 0.1) 72%,
+              rgba(249, 240, 212, 0) 100%
             ),
             linear-gradient(
               180deg,
-              #f7f1e4 0%,
-              rgba(247, 241, 228, 0.02) 28%,
-              rgba(247, 241, 228, 0.08) 72%,
-              #f7f1e4 100%
+              #f9f0d4 0%,
+              rgba(249, 240, 212, 0.02) 28%,
+              rgba(249, 240, 212, 0.08) 72%,
+              #f9f0d4 100%
             );
         }
         .hero-statement {
@@ -1863,7 +2010,7 @@ export default function HomePage() {
           padding: 3.4rem max(1.5rem, calc((100vw - 72rem) / 2));
           border-bottom: 1px solid rgba(35, 42, 37, 0.12);
           background: rgba(35, 42, 37, 0.96);
-          color: #f7f1e4;
+          color: #f9f0d4;
         }
         .future-goals-label {
           flex: 0 0 auto;
@@ -1983,7 +2130,7 @@ export default function HomePage() {
           flex-direction: column;
           justify-content: space-between;
           overflow: hidden;
-          border: 1px solid rgba(247, 241, 228, 0.1);
+          border: 1px solid rgba(249, 240, 212, 0.1);
           border-radius: 1.3rem;
           padding: 1.35rem;
           background: #202720;
@@ -2029,7 +2176,7 @@ export default function HomePage() {
         .split-time {
           position: relative;
           z-index: 1;
-          color: #f7f1e4;
+          color: #f9f0d4;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
           font-size: clamp(2rem, 5vw, 3.2rem);
           font-weight: 700;
@@ -2062,11 +2209,16 @@ export default function HomePage() {
           bottom: 0.65rem;
           width: 1.3rem;
           height: 1.3rem;
-          border-right: 1px solid rgba(247, 241, 228, 0.34);
-          border-bottom: 1px solid rgba(247, 241, 228, 0.34);
+          border-right: 1px solid rgba(249, 240, 212, 0.34);
+          border-bottom: 1px solid rgba(249, 240, 212, 0.34);
         }
         .journey-section {
           overflow: hidden;
+        }
+        .journey-follow-divider {
+          margin-top: -0.6rem;
+          margin-bottom: -0.6rem;
+          opacity: 0.72;
         }
         .journey-timeline {
           --journey-progress: 0%;
@@ -2106,11 +2258,11 @@ export default function HomePage() {
           height: 2.45rem;
           place-items: center;
           overflow: hidden;
-          border: 2px solid #f7f1e4;
+          border: 2px solid #f9f0d4;
           border-radius: 999px;
           background: #202720;
           box-shadow: 0 8px 18px -10px rgba(25, 31, 27, 0.9);
-          color: #f7f1e4;
+          color: #f9f0d4;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 0.64rem;
           font-weight: 700;
@@ -2135,7 +2287,7 @@ export default function HomePage() {
           justify-self: center;
           width: 1rem;
           height: 1rem;
-          border: 3px solid #f7f1e4;
+          border: 3px solid #f9f0d4;
           border-radius: 999px;
           background: #b76849;
           box-shadow: 0 0 0 1px rgba(183, 104, 73, 0.54);
@@ -2252,7 +2404,7 @@ export default function HomePage() {
         .follow-card:hover {
           z-index: 1;
           background: #202720;
-          color: #f7f1e4;
+          color: #f9f0d4;
           transform: translateY(-0.35rem);
         }
         .follow-card:hover::before {
@@ -2366,10 +2518,10 @@ export default function HomePage() {
           width: 2.45rem;
           height: 2.45rem;
           place-items: center;
-          border: 1px solid rgba(247, 241, 228, 0.7);
+          border: 1px solid rgba(249, 240, 212, 0.7);
           border-radius: 999px;
           background: rgba(32, 39, 32, 0.66);
-          color: #f7f1e4;
+          color: #f9f0d4;
           font-size: 0.7rem;
           transform: translate(-50%, -50%);
           transition:
@@ -2387,7 +2539,7 @@ export default function HomePage() {
           padding: 0.2rem 0.32rem;
           border-radius: 0.26rem;
           background: rgba(20, 26, 23, 0.84);
-          color: #f7f1e4;
+          color: #f9f0d4;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 0.59rem;
           font-weight: 700;
@@ -2438,7 +2590,7 @@ export default function HomePage() {
           position: absolute;
           top: 0.75rem;
           left: 0.85rem;
-          color: rgba(247, 241, 228, 0.9);
+          color: rgba(249, 240, 212, 0.9);
           font-size: 0.62rem;
           letter-spacing: 0.14em;
         }
@@ -2446,7 +2598,7 @@ export default function HomePage() {
           position: absolute;
           right: 0.85rem;
           bottom: 0.7rem;
-          color: #f7f1e4;
+          color: #f9f0d4;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
           font-size: 0.62rem;
           letter-spacing: 0.12em;
@@ -2596,8 +2748,32 @@ export default function HomePage() {
           }
         }
         @media (max-width: 639px) {
+          html,
+          body {
+            overflow-x: clip;
+          }
           .hero-section {
             overflow: hidden;
+            padding-right: 1.25rem;
+            padding-left: 1.25rem;
+          }
+          section[data-section] {
+            padding-top: 4.75rem;
+            padding-bottom: 4.75rem;
+          }
+          .section-heading {
+            font-size: clamp(2rem, 10vw, 2.55rem);
+            line-height: 0.98;
+          }
+          .signature-name {
+            font-size: clamp(3.15rem, 17.5vw, 4.35rem);
+            line-height: 0.9;
+          }
+          .name-circle {
+            top: -0.16em;
+            left: -0.2em;
+            width: 1.24em;
+            height: 2.04em;
           }
           .hero-background {
             top: 8rem;
@@ -2609,20 +2785,26 @@ export default function HomePage() {
           .hero-background-fade {
             background: radial-gradient(
                 circle at 72% 42%,
-                rgba(247, 241, 228, 0) 0 18%,
-                rgba(247, 241, 228, 0.3) 54%,
-                #f7f1e4 95%
+                rgba(249, 240, 212, 0) 0 18%,
+                rgba(249, 240, 212, 0.3) 54%,
+                #f9f0d4 95%
               ),
               linear-gradient(
                 90deg,
-                #f7f1e4 0%,
-                rgba(247, 241, 228, 0.82) 44%,
-                rgba(247, 241, 228, 0.18) 100%
+                #f9f0d4 0%,
+                rgba(249, 240, 212, 0.82) 44%,
+                rgba(249, 240, 212, 0.18) 100%
               ),
-              linear-gradient(180deg, #f7f1e4 0%, transparent 30%, #f7f1e4 100%);
+              linear-gradient(180deg, #f9f0d4 0%, transparent 30%, #f9f0d4 100%);
           }
           .hero-content {
-            min-height: 32rem;
+            min-height: 30.5rem;
+          }
+          .bib-label {
+            max-width: 100%;
+            padding: 0.42rem 0.72rem;
+            font-size: 0.61rem;
+            letter-spacing: 0.14em;
           }
           .audience-strip {
             align-items: flex-start;
@@ -2663,6 +2845,14 @@ export default function HomePage() {
           .sponsor-track {
             padding: 0.75rem 0;
           }
+          .journey-follow-divider {
+            margin-top: -0.35rem;
+            margin-bottom: -0.35rem;
+          }
+          .follow-prompt {
+            align-self: flex-start;
+            margin-top: 0.35rem;
+          }
           .follow-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
@@ -2681,6 +2871,13 @@ export default function HomePage() {
           }
           .video-card h3 {
             font-size: 0.88rem;
+          }
+          .split-chip {
+            min-height: 11.75rem;
+            padding: 1.25rem;
+          }
+          .split-time {
+            font-size: clamp(2.15rem, 12vw, 2.85rem);
           }
           .split-result-link {
             opacity: 1;
@@ -2718,9 +2915,27 @@ export default function HomePage() {
             bottom: 0.85rem;
             width: calc(100vw - 1.7rem);
           }
+          .contact-panel {
+            padding: 1.5rem;
+          }
+          .footer-legal {
+            font-size: 0.68rem;
+          }
           .gallery-caption {
             opacity: 1;
             transform: none;
+          }
+        }
+        @media (max-width: 380px) {
+          .audience-card {
+            min-width: 0;
+          }
+          .follow-card {
+            min-height: 9.5rem;
+            padding: 1rem;
+          }
+          .video-card h3 {
+            font-size: 0.82rem;
           }
         }
       `}</style>

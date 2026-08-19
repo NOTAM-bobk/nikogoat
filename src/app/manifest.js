@@ -1,13 +1,13 @@
 export default function manifest() {
   return {
-    name: "Niko Schultz | 800m Runner",
+    name: "Niko Schultz | Puerto Rico 800m Runner",
     short_name: "Niko Schultz",
     description:
-      "Official portfolio of Niko Schultz, professional 800m runner — personal bests, race schedule, results, and press.",
+      "Niko Schultz: Puerto Rico-eligible 800m runner, Penn State student-athlete, race results, videos, and athlete updates.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F6F1E7",
-    theme_color: "#C1440E",
+    background_color: "#FAF0C9",
+    theme_color: "#B76849",
     icons: [
       {
         src: "/favicon.ico",
