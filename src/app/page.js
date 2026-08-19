@@ -1,9 +1,9 @@
 import Image from "next/image";
 
 const personalBests = [
-  { event: "400m", time: "47.82", place: "Drake Relays, 2025" },
-  { event: "800m", time: "1:44.61", place: "USATF Champs, 2025" },
-  { event: "1500m", time: "3:38.02", place: "Bislett Games, 2024" },
+  { event: "400m", time: "47.91", place: "Collegiate personal best" },
+  { event: "600m", time: "1:15.22", place: "Short Track — Feb. 27, 2026" },
+  { event: "800m", time: "1:45.24", place: "Virginia Challenge — Apr. 17, 2026" },
 ];
 
 const schedule = [
