@@ -66,6 +66,23 @@ const galleryImages = [
   { src: "/images/IMG_2210.jpeg", alt: "Portrait of Niko Schultz in team kit" },
 ];
 
+const socialStats = [
+  {
+    platform: "YouTube",
+    handle: "@nikoschultz4306",
+    followers: 22100,
+    href: "https://youtube.com/@nikoschultz4306",
+    accent: "youtube",
+  },
+  {
+    platform: "Instagram",
+    handle: "@nikoschultzzz",
+    followers: 27400,
+    href: "https://instagram.com/nikoschultzzz",
+    accent: "instagram",
+  },
+];
+
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -146,6 +163,71 @@ function TrackTimeCounter({ value }) {
       {display}
     </span>
   );
+}
+
+function AnimatedAudienceCounter({ value }) {
+  const counterRef = useRef(null);
+  const hasStarted = useRef(false);
+  const [display, setDisplay] = useState("0.0K");
+
+  useEffect(() => {
+    const node = counterRef.current;
+    if (!node) return undefined;
+
+    const formatAudience = (count) => `${(count / 1000).toFixed(1)}K`;
+
+    const animate = () => {
+      if (hasStarted.current) return;
+      hasStarted.current = true;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setDisplay(formatAudience(value));
+        return;
+      }
+
+      const start = performance.now();
+      const duration = 1450;
+
+      const tick = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 4);
+        setDisplay(formatAudience(Math.round(value * eased)));
+
+        if (progress < 1) {
+          window.requestAnimationFrame(tick);
+        }
+      };
+
+      window.requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          animate();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.7 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return (
+    <span
+      ref={counterRef}
+      className="audience-count tabular-nums"
+      aria-label={`${formatNumber(value)} followers`}
+    >
+      {display}
+    </span>
+  );
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 function CustomCursor() {
@@ -237,59 +319,38 @@ export default function HomePage() {
       <div className="ambient-orb ambient-orb-one" aria-hidden="true" />
       <div className="ambient-orb ambient-orb-two" aria-hidden="true" />
 
-      {/* NAV */}
-      <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6">
-        <nav className="nav-shell mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-ink/10 bg-cream/75 px-4 py-3 backdrop-blur-xl sm:px-5">
-          <a
-            href="#top"
-            className="group flex items-center gap-3"
-            data-cursor-hover
-          >
-            <span className="nav-mark" aria-hidden="true">
-              NS
-            </span>
-            <span className="bib-label transition-colors duration-300 group-hover:text-clay">
-              Niko Schultz
-            </span>
-          </a>
-
-          <ul className="hidden items-center gap-1 font-body text-xs font-bold uppercase tracking-[0.14em] text-ink/70 md:flex">
-            {[
-              ["About", "#about"],
-              ["Bests", "#bests"],
-              ["News", "#news"],
-              ["Gallery", "#gallery"],
-              ["Contact", "#contact"],
-            ].map(([label, href]) => (
-              <li key={href}>
-                <a href={href} className="nav-link" data-cursor-hover>
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <a href="#contact" className="btn-primary nav-cta" data-cursor-hover>
-            <span className="hidden sm:inline">Get in touch</span>
-            <span className="sm:hidden">Contact</span>
-            <span aria-hidden="true">↗</span>
-          </a>
-        </nav>
-      </header>
-
       {/* HERO */}
       <section
         id="top"
-        className="relative mx-auto max-w-6xl px-6 pb-24 pt-16 sm:pb-28 sm:pt-24"
+        className="relative mx-auto max-w-6xl px-6 pb-24 pt-10 sm:pb-28 sm:pt-16"
       >
-        <div className="absolute left-6 top-8 hidden font-mono text-[10px] uppercase tracking-[0.34em] text-ink/35 sm:block">
-          41° 38′ N · 88° 05′ W
+        <div className="audience-strip" data-reveal>
+          <span className="audience-intro">Follow the journey</span>
+          <div className="audience-list">
+            {socialStats.map((stat) => (
+              <a
+                key={stat.platform}
+                href={stat.href}
+                target="_blank"
+                rel="noreferrer"
+                className={`audience-card audience-${stat.accent}`}
+                data-cursor-hover
+              >
+                <span className="audience-platform">{stat.platform}</span>
+                <AnimatedAudienceCounter value={stat.followers} />
+                <span className="audience-label">
+                  followers · {stat.handle}
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
+
         <div className="grid items-center gap-12 sm:grid-cols-2">
           <div data-reveal>
             <span className="bib-label">800m Athlete · Puerto Rico</span>
 
-            <h1 className="section-heading mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl">
+            <h1 className="signature-name mt-6 text-6xl leading-[0.88] sm:text-7xl lg:text-8xl">
               Niko
               <br />
               Schultz
@@ -346,7 +407,6 @@ export default function HomePage() {
       {/* PERSONAL BESTS */}
       <section id="bests" className="relative mx-auto max-w-6xl px-6 py-24">
         <div className="section-kicker" data-reveal>
-          <span>01</span>
           <span>Performance</span>
         </div>
         <h2 className="section-heading mt-4" data-reveal>
@@ -401,15 +461,10 @@ export default function HomePage() {
               />
               <div className="image-wash image-wash-light" aria-hidden="true" />
             </div>
-            <div className="profile-label" aria-hidden="true">
-              <span>NIKO</span>
-              <span>SCHULTZ</span>
-            </div>
           </div>
 
           <div className="sm:order-1" data-reveal>
             <div className="section-kicker">
-              <span>02</span>
               <span>About the athlete</span>
             </div>
             <h2 className="section-heading mt-4">About</h2>
@@ -447,7 +502,6 @@ export default function HomePage() {
       {/* RECENT NEWS */}
       <section id="news" className="mx-auto max-w-6xl px-6 py-24">
         <div className="section-kicker" data-reveal>
-          <span>03</span>
           <span>From the track</span>
         </div>
         <h2 className="section-heading mt-4" data-reveal>
@@ -512,7 +566,6 @@ export default function HomePage() {
       {/* GALLERY */}
       <section id="gallery" className="mx-auto max-w-6xl px-6 py-24">
         <div className="section-kicker" data-reveal>
-          <span>04</span>
           <span>In motion</span>
         </div>
         <h2 className="section-heading mt-4" data-reveal>
@@ -560,9 +613,7 @@ export default function HomePage() {
           <div className="contact-glow" aria-hidden="true" />
           <div className="relative grid gap-12 sm:grid-cols-2">
             <div>
-              <span className="bib-label text-gold">
-                05 · Let&apos;s connect
-              </span>
+              <span className="bib-label text-gold">Let&apos;s connect</span>
               <h2 className="section-heading mt-5 text-cream">Get in Touch</h2>
               <p className="mt-5 max-w-sm leading-relaxed text-cream/70">
                 For sponsorships, media, race invitations, or collaborations,
@@ -583,7 +634,7 @@ export default function HomePage() {
                 {[
                   ["Instagram", "https://instagram.com/nikoschultzzz"],
                   ["TikTok", "https://tiktok.com/@nikojschultz"],
-                  ["YouTube", "https://youtube.com/@nikoschultz"],
+                  ["YouTube", "https://youtube.com/@nikoschultz4306"],
                 ].map(([label, href]) => (
                   <li key={label}>
                     <a
@@ -617,11 +668,19 @@ export default function HomePage() {
           scroll-behavior: smooth;
         }
         .site-shell {
+          font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
           background-image: linear-gradient(
             115deg,
             rgba(255, 255, 255, 0.24),
             transparent 46%
           );
+        }
+        .signature-name {
+          color: #202720;
+          font-family: var(--font-signature), cursive;
+          font-weight: 400;
+          letter-spacing: -0.07em;
+          text-shadow: 3px 3px 0 rgba(209, 168, 61, 0.22);
         }
         @media (pointer: fine) {
           .site-shell,
@@ -635,12 +694,12 @@ export default function HomePage() {
           z-index: -1;
           inset: 0;
           pointer-events: none;
-          opacity: 0.45;
+          opacity: 0.37;
           background-image: radial-gradient(
-            rgba(34, 39, 35, 0.26) 0.75px,
-            transparent 0.85px
+            rgba(34, 39, 35, 0.24) 1.35px,
+            transparent 1.5px
           );
-          background-size: 22px 22px;
+          background-size: 34px 34px;
           -webkit-mask-image: linear-gradient(
             to bottom,
             black,
@@ -676,7 +735,7 @@ export default function HomePage() {
             background-position: 0 0;
           }
           to {
-            background-position: 88px 66px;
+            background-position: 102px 68px;
           }
         }
         @keyframes floatOrb {
@@ -739,77 +798,87 @@ export default function HomePage() {
           opacity: 1;
           transform: translate3d(0, 0, 0);
         }
-        .nav-shell {
-          box-shadow: 0 18px 45px -34px rgba(25, 31, 27, 0.85);
-        }
-        .nav-mark {
-          display: grid;
-          place-items: center;
-          width: 2.2rem;
-          height: 2.2rem;
-          border-radius: 0.7rem;
-          background: #202720;
-          color: #f7f1e4;
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 0.64rem;
-          font-weight: 800;
-          letter-spacing: -0.08em;
-          box-shadow:
-            inset 0 0 0 1px rgba(255, 255, 255, 0.11),
-            0 8px 15px -10px rgba(23, 28, 24, 0.85);
-        }
-        .nav-link {
-          display: inline-flex;
-          position: relative;
-          padding: 0.65rem 0.72rem;
-          transition: color 220ms ease;
-        }
-        .nav-link::after {
-          position: absolute;
-          content: "";
-          right: 0.72rem;
-          bottom: 0.45rem;
-          left: 0.72rem;
-          height: 1px;
-          transform: scaleX(0);
-          transform-origin: right;
-          background: #b76849;
-          transition: transform 240ms ease;
-        }
-        .nav-link:hover {
-          color: #b76849;
-        }
-        .nav-link:hover::after {
-          transform: scaleX(1);
-          transform-origin: left;
-        }
-        .nav-cta {
-          gap: 0.65rem;
-          align-items: center;
-          padding: 0.65rem 0.9rem;
-          font-size: 0.75rem;
-        }
-
         .section-kicker {
           display: flex;
           align-items: center;
-          gap: 0.7rem;
-          color: rgba(35, 42, 37, 0.58);
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 0.64rem;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-        }
-        .section-kicker span:first-child {
-          display: grid;
-          place-items: center;
-          width: 1.85rem;
-          height: 1.85rem;
-          border: 1px solid rgba(35, 42, 37, 0.19);
-          border-radius: 999px;
+          gap: 0.55rem;
           color: #b76849;
-          font-size: 0.57rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+        .section-kicker::before {
+          width: 1.75rem;
+          height: 2px;
+          border-radius: 999px;
+          background: currentColor;
+          content: "";
+        }
+
+        .audience-strip {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1.25rem;
+          margin-bottom: 4.25rem;
+          padding-bottom: 1.15rem;
+          border-bottom: 1px solid rgba(35, 42, 37, 0.14);
+        }
+        .audience-intro {
+          color: #b76849;
+          font-size: 0.92rem;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+        .audience-list {
+          display: flex;
+          align-items: stretch;
+          gap: 0.7rem;
+        }
+        .audience-card {
+          display: grid;
+          grid-template-columns: auto auto;
+          column-gap: 0.5rem;
+          align-items: baseline;
+          min-width: 12rem;
+          padding: 0.65rem 0.8rem 0.55rem;
+          border: 1px solid rgba(35, 42, 37, 0.1);
+          border-radius: 1rem;
+          background: rgba(255, 255, 255, 0.4);
+          box-shadow: 0 12px 24px -24px rgba(25, 31, 27, 0.8);
+          transition:
+            transform 250ms ease,
+            background 250ms ease,
+            box-shadow 250ms ease;
+        }
+        .audience-card:hover {
+          transform: translateY(-3px) rotate(-0.5deg);
+          background: rgba(255, 255, 255, 0.72);
+          box-shadow: 0 18px 30px -22px rgba(25, 31, 27, 0.7);
+        }
+        .audience-platform {
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+        .audience-youtube .audience-platform {
+          color: #bf3d32;
+        }
+        .audience-instagram .audience-platform {
+          color: #aa4a6a;
+        }
+        .audience-count {
+          color: #202720;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 1.25rem;
+          font-weight: 700;
+          letter-spacing: -0.08em;
+        }
+        .audience-label {
+          grid-column: 1 / -1;
+          margin-top: 0.12rem;
+          color: rgba(35, 42, 37, 0.57);
+          font-size: 0.63rem;
+          letter-spacing: 0.02em;
         }
         .hero-frame {
           position: relative;
@@ -910,25 +979,6 @@ export default function HomePage() {
           transform: scale(1.06);
           filter: saturate(1.05);
         }
-        .profile-label {
-          position: absolute;
-          right: -1.1rem;
-          top: 1rem;
-          display: flex;
-          gap: 0.2rem;
-          padding: 0.45rem;
-          border: 1px solid rgba(35, 42, 37, 0.16);
-          border-radius: 0.55rem;
-          background: rgba(247, 241, 228, 0.88);
-          box-shadow: 0 10px 25px -18px rgba(25, 31, 27, 0.8);
-          color: #202720;
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-          font-size: 0.55rem;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-          writing-mode: vertical-rl;
-        }
-
         .split-chip {
           position: relative;
           display: flex;
@@ -1093,9 +1143,6 @@ export default function HomePage() {
           .hero-offset-card {
             left: 0.8rem;
             bottom: -1rem;
-          }
-          .profile-label {
-            right: 0.6rem;
           }
           .gallery-caption {
             opacity: 1;
