@@ -114,6 +114,15 @@ const progressMilestones = [
   },
 ];
 
+const sponsors = [
+  { name: "Bicarb 3.0", className: "sponsor-bicarb" },
+  { name: "Kettle & Fire", className: "sponsor-kettle" },
+  {
+    name: "Andersen Endurance Sports Management",
+    className: "sponsor-andersen",
+  },
+];
+
 function TrackTimeCounter({ value }) {
   const counterRef = useRef(null);
   const [display, setDisplay] = useState(
@@ -361,7 +370,7 @@ function RepellingDotGrid() {
 
           context.beginPath();
           context.arc(displacedX, displacedY, radius, 0, Math.PI * 2);
-          context.fillStyle = `rgba(34, 39, 35, ${0.2 + influence * 0.2})`;
+          context.fillStyle = `rgba(27, 35, 29, ${0.3 + influence * 0.22})`;
           context.fill();
         }
       }
@@ -448,7 +457,6 @@ function ProgressTimeline() {
             key={milestone.year}
             data-milestone-index={index}
             className={`timeline-stop ${activeIndex === index ? "is-active" : ""}`}
-            data-reveal
           >
             <span className="timeline-marker" aria-hidden="true" />
             <div className="timeline-copy">
@@ -461,6 +469,29 @@ function ProgressTimeline() {
         ))}
       </div>
     </div>
+  );
+}
+
+function SponsorCarousel() {
+  const sponsorLoop = [...sponsors, ...sponsors, ...sponsors];
+
+  return (
+    <section className="sponsor-carousel" aria-label="Partners and sponsors">
+      <div className="sponsor-carousel-label">Partners</div>
+      <div className="sponsor-viewport">
+        <div className="sponsor-track">
+          {sponsorLoop.map((sponsor, index) => (
+            <span
+              className={`sponsor-wordmark ${sponsor.className}`}
+              key={`${sponsor.name}-${index}`}
+              aria-hidden={index >= sponsors.length}
+            >
+              {sponsor.name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -791,6 +822,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <SponsorCarousel />
+
       {/* PROGRESSION */}
       <section
         id="journey"
@@ -954,8 +987,7 @@ export default function HomePage() {
             </div>
 
             <div className="sm:justify-self-end">
-              <span className="bib-label text-cream/60">Follow along</span>
-              <ul className="mt-5 space-y-3 font-body text-xl font-semibold">
+              <ul className="space-y-3 font-body text-xl font-semibold">
                 {[
                   ["Instagram", "https://instagram.com/nikoschultzzz"],
                   ["TikTok", "https://tiktok.com/@nikojschultz"],
@@ -996,13 +1028,13 @@ export default function HomePage() {
         }
         .site-shell {
           font-family: var(--font-body), ui-rounded, system-ui, sans-serif;
-          background-color: #fff1be;
+          background-color: #f7f1e4;
           background-image: radial-gradient(
               circle at 10% 5%,
-              rgba(255, 255, 255, 0.7),
+              rgba(255, 255, 255, 0.48),
               transparent 30%
             ),
-            linear-gradient(115deg, rgba(255, 255, 255, 0.28), transparent 46%);
+            linear-gradient(115deg, rgba(255, 255, 255, 0.17), transparent 46%);
         }
         .signature-name {
           position: relative;
@@ -1045,13 +1077,7 @@ export default function HomePage() {
           width: 100vw;
           height: 100vh;
           pointer-events: none;
-          opacity: 0.72;
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            black,
-            transparent 84%
-          );
-          mask-image: linear-gradient(to bottom, black, transparent 84%);
+          opacity: 0.82;
         }
         .ambient-orb {
           position: absolute;
@@ -1278,17 +1304,17 @@ export default function HomePage() {
           inset: 0;
           background: linear-gradient(
               90deg,
-              #fff1be 2%,
-              rgba(255, 241, 190, 0.94) 31%,
-              rgba(255, 241, 190, 0.25) 60%,
-              rgba(255, 241, 190, 0) 78%
+              #f7f1e4 2%,
+              rgba(247, 241, 228, 0.94) 31%,
+              rgba(247, 241, 228, 0.25) 60%,
+              rgba(247, 241, 228, 0) 78%
             ),
             linear-gradient(
               180deg,
-              #fff1be 0%,
-              rgba(255, 241, 190, 0.14) 24%,
-              rgba(255, 241, 190, 0) 62%,
-              #fff1be 100%
+              #f7f1e4 0%,
+              rgba(247, 241, 228, 0.14) 24%,
+              rgba(247, 241, 228, 0) 62%,
+              #f7f1e4 100%
             );
         }
         .hero-content {
@@ -1337,6 +1363,82 @@ export default function HomePage() {
         .profile-frame:hover .profile-image {
           transform: scale(1.06);
           filter: saturate(1.05);
+        }
+        .sponsor-carousel {
+          display: grid;
+          grid-template-columns: minmax(7rem, 1fr) minmax(0, 5fr);
+          align-items: center;
+          gap: 1.5rem;
+          margin: 0 calc(50% - 50vw);
+          width: 100vw;
+          overflow: hidden;
+          border-top: 1px solid rgba(35, 42, 37, 0.12);
+          border-bottom: 1px solid rgba(35, 42, 37, 0.12);
+          background: rgba(255, 255, 255, 0.26);
+        }
+        .sponsor-carousel-label {
+          padding-left: max(1.5rem, calc((100vw - 72rem) / 2));
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.66rem;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+        .sponsor-viewport {
+          min-width: 0;
+          overflow: hidden;
+        }
+        .sponsor-track {
+          display: flex;
+          width: max-content;
+          align-items: center;
+          gap: clamp(2.25rem, 7vw, 7rem);
+          padding: 1.35rem 0;
+          animation: sponsorMarquee 26s linear infinite;
+        }
+        .sponsor-carousel:hover .sponsor-track {
+          animation-play-state: paused;
+        }
+        .sponsor-wordmark {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          transition:
+            transform 220ms ease,
+            opacity 220ms ease;
+        }
+        .sponsor-wordmark:hover {
+          transform: translateY(-2px);
+        }
+        .sponsor-bicarb {
+          color: #1d5a55;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+          font-weight: 700;
+          letter-spacing: -0.06em;
+        }
+        .sponsor-kettle {
+          color: #9c3f32;
+          font-family: Georgia, serif;
+          font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+          font-weight: 700;
+          letter-spacing: -0.05em;
+        }
+        .sponsor-andersen {
+          color: #273128;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: clamp(0.76rem, 1.65vw, 1rem);
+          font-weight: 700;
+          letter-spacing: -0.04em;
+        }
+        @keyframes sponsorMarquee {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-33.333%);
+          }
         }
         .split-chip {
           position: relative;
@@ -1444,11 +1546,11 @@ export default function HomePage() {
           width: 2.45rem;
           height: 2.45rem;
           place-items: center;
-          border: 2px solid #fff1be;
+          border: 2px solid #f7f1e4;
           border-radius: 999px;
           background: #202720;
           box-shadow: 0 8px 18px -10px rgba(25, 31, 27, 0.9);
-          color: #fff1be;
+          color: #f7f1e4;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 0.64rem;
           font-weight: 700;
@@ -1473,7 +1575,7 @@ export default function HomePage() {
           justify-self: center;
           width: 1rem;
           height: 1rem;
-          border: 3px solid #fff1be;
+          border: 3px solid #f7f1e4;
           border-radius: 999px;
           background: #b76849;
           box-shadow: 0 0 0 1px rgba(183, 104, 73, 0.54);
@@ -1714,11 +1816,11 @@ export default function HomePage() {
           .hero-background-fade {
             background: linear-gradient(
                 90deg,
-                #fff1be 0%,
-                rgba(255, 241, 190, 0.72) 52%,
-                rgba(255, 241, 190, 0.12) 100%
+                #f7f1e4 0%,
+                rgba(247, 241, 228, 0.72) 52%,
+                rgba(247, 241, 228, 0.12) 100%
               ),
-              linear-gradient(180deg, #fff1be 0%, transparent 30%, #fff1be 100%);
+              linear-gradient(180deg, #f7f1e4 0%, transparent 30%, #f7f1e4 100%);
           }
           .hero-content {
             min-height: 32rem;
@@ -1734,6 +1836,17 @@ export default function HomePage() {
           }
           .audience-card {
             width: 100%;
+          }
+          .sponsor-carousel {
+            grid-template-columns: 1fr;
+            gap: 0;
+            padding: 0.75rem 0;
+          }
+          .sponsor-carousel-label {
+            padding: 0 1.5rem 0.4rem;
+          }
+          .sponsor-track {
+            padding: 0.75rem 0;
           }
           .journey-timeline {
             margin-top: 2.5rem;
