@@ -653,8 +653,9 @@ function RepellingDotGrid() {
 
     const context = canvas.getContext("2d");
     const pointer = { x: -1000, y: -1000 };
+    const clickPulse = { x: -1000, y: -1000, strength: 0 };
     const spacing = 32;
-    const repulsionRadius = 190;
+    const repulsionRadius = 210;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -684,6 +685,12 @@ function RepellingDotGrid() {
       pointer.y = -1000;
     };
 
+    const createClickPulse = (event) => {
+      clickPulse.x = event.clientX;
+      clickPulse.y = event.clientY;
+      clickPulse.strength = 1;
+    };
+
     const draw = (time = 0) => {
       context.clearRect(0, 0, width, height);
       const driftX = reducedMotion ? 0 : Math.sin(time / 5500) * 1.5;
@@ -696,20 +703,38 @@ function RepellingDotGrid() {
           const distanceX = dotX - pointer.x;
           const distanceY = dotY - pointer.y;
           const distance = Math.hypot(distanceX, distanceY);
-          const influence = Math.max(0, 1 - distance / repulsionRadius);
-          const push = influence * influence * 22;
+          const hoverInfluence = Math.max(0, 1 - distance / repulsionRadius);
+          const clickDistanceX = dotX - clickPulse.x;
+          const clickDistanceY = dotY - clickPulse.y;
+          const clickDistance = Math.hypot(clickDistanceX, clickDistanceY);
+          const clickInfluence =
+            Math.max(0, 1 - clickDistance / (repulsionRadius * 1.35)) *
+            clickPulse.strength;
           const safeDistance = Math.max(distance, 1);
-          const displacedX = dotX + (distanceX / safeDistance) * push;
-          const displacedY = dotY + (distanceY / safeDistance) * push;
-          const radius = 1.65 + influence * 0.9;
+          const clickSafeDistance = Math.max(clickDistance, 1);
+          const directionX =
+            (distanceX / safeDistance) *
+              (hoverInfluence * hoverInfluence * 24) +
+            (clickDistanceX / clickSafeDistance) *
+              (clickInfluence * clickInfluence * 44);
+          const directionY =
+            (distanceY / safeDistance) *
+              (hoverInfluence * hoverInfluence * 24) +
+            (clickDistanceY / clickSafeDistance) *
+              (clickInfluence * clickInfluence * 44);
+          const displacedX = dotX + directionX;
+          const displacedY = dotY + directionY;
+          const radius = 1.65 + Math.max(hoverInfluence, clickInfluence) * 1.05;
 
           context.beginPath();
           context.arc(displacedX, displacedY, radius, 0, Math.PI * 2);
-          context.fillStyle = `rgba(27, 35, 29, ${0.3 + influence * 0.22})`;
+          context.fillStyle = `rgba(27, 35, 29, ${0.3 + Math.max(hoverInfluence, clickInfluence) * 0.22})`;
           context.fill();
         }
       }
 
+      clickPulse.strength *= 0.95;
+      if (clickPulse.strength < 0.01) clickPulse.strength = 0;
       if (!reducedMotion) frameId = window.requestAnimationFrame(draw);
     };
 
@@ -717,12 +742,14 @@ function RepellingDotGrid() {
     draw();
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("pointermove", setPointer, { passive: true });
+    window.addEventListener("pointerdown", createClickPulse, { passive: true });
     window.addEventListener("pointerleave", clearPointer);
 
     return () => {
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("pointermove", setPointer);
+      window.removeEventListener("pointerdown", createClickPulse);
       window.removeEventListener("pointerleave", clearPointer);
     };
   }, []);
@@ -1057,31 +1084,6 @@ export default function HomePage() {
         id="top"
         className="hero-section relative mx-auto max-w-6xl overflow-visible px-6 pb-28 pt-10 sm:pb-36 sm:pt-16"
       >
-        <div className="audience-strip" data-reveal>
-          <span className="audience-intro">Follow the journey</span>
-          <div className="audience-list">
-            {socialStats.map((stat) => (
-              <a
-                key={stat.platform}
-                href={stat.href}
-                target="_blank"
-                rel="noreferrer"
-                className={`audience-card audience-${stat.accent}`}
-                data-cursor-hover
-              >
-                <span className="audience-platform">{stat.platform}</span>
-                <AnimatedAudienceCounter
-                  value={stat.followers}
-                  start={!isLoading}
-                />
-                <span className="audience-label">
-                  followers · {stat.handle}
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-
         <div className="hero-background" aria-hidden="true">
           <Image
             src="/images/hero.jpg"
@@ -1114,6 +1116,30 @@ export default function HomePage() {
             <a href="#bests" className="btn-secondary" data-cursor-hover>
               Personal bests
             </a>
+          </div>
+
+          <div className="audience-strip audience-strip-hero" data-reveal>
+            <div className="audience-list">
+              {socialStats.map((stat) => (
+                <a
+                  key={stat.platform}
+                  href={stat.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`audience-card audience-${stat.accent}`}
+                  data-cursor-hover
+                >
+                  <span className="audience-platform">{stat.platform}</span>
+                  <AnimatedAudienceCounter
+                    value={stat.followers}
+                    start={!isLoading}
+                  />
+                  <span className="audience-label">
+                    followers · {stat.handle}
+                  </span>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -1183,7 +1209,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="sm:order-1" data-reveal>
+          <div className="about-copy sm:order-1" data-reveal>
             <h2 className="section-heading section-title">About</h2>
 
             <div className="about-story mt-7">
@@ -1359,10 +1385,6 @@ export default function HomePage() {
         <h2 className="section-heading section-title" data-reveal>
           Recent News
         </h2>
-        <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
-          Race updates, international competition, and life beyond the track.
-        </p>
-
         <div
           className="news-table mt-10 overflow-x-auto rounded-[1.35rem] border border-ink/10 bg-cream/70 shadow-[0_18px_55px_-34px_rgba(25,31,27,0.55)]"
           data-reveal
@@ -1409,6 +1431,25 @@ export default function HomePage() {
             </tbody>
           </table>
         </div>
+
+        <div className="news-mobile-list mt-7">
+          {news.map((row) => (
+            <article key={row.title} className="news-mobile-item" data-reveal>
+              <div>
+                <span className="news-mobile-date">{row.date}</span>
+                <span
+                  className={`news-mobile-status is-${row.status.toLowerCase()}`}
+                >
+                  {row.status}
+                </span>
+              </div>
+              <h3>{row.title}</h3>
+              <p>
+                {row.location} · {row.category}
+              </p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-6">
@@ -1426,12 +1467,6 @@ export default function HomePage() {
             <h2 className="section-heading section-title" data-reveal>
               Recent Vids
             </h2>
-            <p
-              className="mt-3 max-w-lg leading-relaxed text-ink-soft"
-              data-reveal
-            >
-              The newest training, racing, and behind-the-scenes uploads.
-            </p>
           </div>
           <a
             className="video-channel-link"
@@ -1978,9 +2013,10 @@ export default function HomePage() {
           align-items: center;
           justify-content: space-between;
           gap: 1.25rem;
-          margin-bottom: 4.25rem;
-          padding-bottom: 1.15rem;
-          border-bottom: 1px solid rgba(35, 42, 37, 0.14);
+          padding-top: 1.5rem;
+        }
+        .audience-strip-hero {
+          margin-top: 0.15rem;
         }
         .audience-intro {
           display: inline-flex;
@@ -2869,6 +2905,9 @@ export default function HomePage() {
         .news-table tr + tr {
           border-top: 1px solid rgba(35, 42, 37, 0.07);
         }
+        .news-mobile-list {
+          display: none;
+        }
         .gallery-card {
           transform: translateZ(0);
           box-shadow: 0 14px 30px -24px rgba(25, 31, 27, 0.8);
@@ -3142,10 +3181,43 @@ export default function HomePage() {
             width: 2.5em;
             height: 1.74em;
           }
-          .profile-frame {
-            width: min(16rem, 68vw);
-            aspect-ratio: 4 / 5;
-            margin: 0 auto 0.85rem;
+          #about .grid {
+            grid-template-columns: minmax(6.5rem, 0.6fr) minmax(0, 1.4fr);
+            align-items: start;
+            gap: 1rem;
+          }
+          #about .profile-frame {
+            width: 100%;
+            min-width: 0;
+            aspect-ratio: 0.8;
+            margin: 0.1rem 0 0;
+          }
+          #about .profile-frame > div {
+            border-radius: 1rem;
+          }
+          #about .about-copy {
+            min-width: 0;
+          }
+          #about .section-heading {
+            font-size: clamp(1.8rem, 9vw, 2.2rem);
+          }
+          #about .about-story {
+            gap: 0.75rem;
+            font-size: 0.88rem;
+            line-height: 1.55;
+          }
+          #about .about-story p {
+            padding-left: 0.7rem;
+          }
+          #about .about-lead {
+            margin-bottom: 0.38rem;
+            font-size: 1.02em;
+            line-height: 1.08;
+          }
+          #about .bib-label {
+            padding: 0.33rem 0.48rem;
+            font-size: 0.5rem;
+            letter-spacing: 0.08em;
           }
           .profile-frame::after {
             right: -0.6rem;
@@ -3183,16 +3255,31 @@ export default function HomePage() {
             letter-spacing: 0.14em;
           }
           .audience-strip {
-            align-items: flex-start;
-            flex-direction: column;
-            margin-bottom: 2.75rem;
+            width: 100%;
+            margin-top: 0.1rem;
+            padding-top: 1.2rem;
           }
           .audience-list {
+            display: grid;
             width: 100%;
-            flex-direction: column;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.55rem;
           }
           .audience-card {
             width: 100%;
+            min-width: 0;
+            padding: 0.68rem;
+          }
+          .audience-platform {
+            font-size: 0.56rem;
+          }
+          .audience-count {
+            font-size: 1rem;
+          }
+          .audience-label {
+            grid-column: 1 / -1;
+            font-size: 0.5rem;
+            letter-spacing: 0.02em;
           }
           .hero-statement {
             max-width: 22rem;
@@ -3257,6 +3344,61 @@ export default function HomePage() {
           .follow-card:last-child {
             grid-column: span 2;
           }
+          .news-table {
+            display: none;
+          }
+          .news-mobile-list {
+            display: grid;
+            gap: 0.7rem;
+          }
+          .news-mobile-item {
+            padding: 0.95rem 1rem;
+            border: 1px solid rgba(35, 42, 37, 0.1);
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.32);
+            box-shadow: 0 12px 25px -23px rgba(25, 31, 27, 0.8);
+          }
+          .news-mobile-item > div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+          }
+          .news-mobile-date {
+            color: #a5543e;
+            font-family: var(--font-mono), ui-monospace, monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+          .news-mobile-status {
+            padding: 0.2rem 0.42rem;
+            border-radius: 999px;
+            background: rgba(102, 137, 122, 0.14);
+            color: #415944;
+            font-size: 0.56rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+          }
+          .news-mobile-status.is-update {
+            background: rgba(209, 168, 61, 0.16);
+            color: #8a6615;
+          }
+          .news-mobile-item h3 {
+            margin: 0.62rem 0 0;
+            color: #202720;
+            font-size: 0.92rem;
+            font-weight: 800;
+            line-height: 1.28;
+          }
+          .news-mobile-item p {
+            margin: 0.38rem 0 0;
+            color: rgba(35, 42, 37, 0.6);
+            font-size: 0.72rem;
+            line-height: 1.35;
+          }
           .video-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.15rem 0.85rem;
@@ -3311,7 +3453,36 @@ export default function HomePage() {
             width: calc(100vw - 1.7rem);
           }
           .contact-panel {
-            padding: 1.5rem;
+            padding: 1.4rem;
+          }
+          .contact-panel .relative.grid {
+            gap: 1.8rem;
+          }
+          .contact-panel .section-heading {
+            font-size: 2rem;
+          }
+          .contact-panel .btn-primary {
+            width: 100%;
+            max-width: 100%;
+            padding: 0.82rem 0.95rem;
+            font-size: 0.67rem;
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+          }
+          .contact-panel .sm\\:justify-self-end {
+            justify-self: stretch;
+          }
+          .contact-panel ul {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+            font-size: 0.78rem;
+          }
+          .contact-panel .footer-link {
+            justify-content: center;
+            padding: 0.55rem 0.25rem;
+            border: 1px solid rgba(244, 239, 228, 0.14);
+            border-radius: 0.65rem;
           }
           .footer-tools {
             align-items: flex-start;
@@ -3340,8 +3511,12 @@ export default function HomePage() {
           .achievement-card {
             min-height: 14.25rem;
           }
-          .profile-frame {
-            width: min(14.5rem, 72vw);
+          #about .grid {
+            grid-template-columns: minmax(5.7rem, 0.57fr) minmax(0, 1.43fr);
+            gap: 0.75rem;
+          }
+          #about .about-story {
+            font-size: 0.82rem;
           }
           .video-card h3 {
             font-size: 0.82rem;
