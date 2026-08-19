@@ -4,12 +4,23 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const personalBests = [
-  { event: "400m", time: "47.91", place: "Collegiate personal best" },
-  { event: "600m", time: "1:15.22", place: "Short Track — Feb. 27, 2026" },
+  {
+    event: "400m",
+    time: "47.91",
+    place: "Collegiate personal best",
+    href: "https://www.tfrrs.org/results/82236/5194778/2024_Bryan_Clay_Invitational/Mens-400-Meters",
+  },
+  {
+    event: "600m",
+    time: "1:15.22",
+    place: "Short Track — Feb. 27, 2026",
+    href: "https://www.tfrrs.org/results/94449/5818867/2026_Big_Ten_Indoor_Track_and_Field_Championships/Mens-600-Meters",
+  },
   {
     event: "800m",
     time: "1:45.24",
     place: "Virginia Challenge — Apr. 17, 2026",
+    href: "https://www.tfrrs.org/results/95487/5942918/Virginia_Challenge/Mens-800-Meters",
   },
 ];
 
@@ -120,6 +131,74 @@ const sponsors = [
   {
     name: "Andersen Endurance Sports Management",
     className: "sponsor-andersen",
+  },
+  { name: "Erly App", className: "sponsor-erly" },
+];
+
+const followLinks = [
+  {
+    label: "YouTube",
+    handle: "@nikoschultz4306",
+    href: "https://www.youtube.com/@nikoschultz4306",
+    className: "follow-youtube",
+  },
+  {
+    label: "Instagram",
+    handle: "@nikoschultzzz",
+    href: "https://www.instagram.com/nikoschultzzz",
+    className: "follow-instagram",
+  },
+  {
+    label: "TikTok",
+    handle: "@nikojschultz",
+    href: "https://www.tiktok.com/@nikojschultz",
+    className: "follow-tiktok",
+  },
+  {
+    label: "Strava",
+    handle: "Add your link",
+    href: "#follow",
+    className: "follow-strava is-placeholder",
+  },
+  {
+    label: "Linktree",
+    handle: "@nikoschultzzz",
+    href: "https://linktr.ee/nikoschultzzz",
+    className: "follow-linktree",
+  },
+];
+
+const recentVideos = [
+  {
+    id: "t-moYUYpv60",
+    title: "I Ran a 49 400m ... in an 800m🫡",
+    duration: "6:47",
+    age: "2 weeks ago",
+  },
+  {
+    id: "TQeCHVewNPM",
+    title: "I Raced in Barbados and WON the 800M",
+    duration: "12:34",
+    age: "4 weeks ago",
+  },
+  {
+    id: "hbO5lohW8ao",
+    title:
+      "I wanted to quit and now I am one of the Nation's FASTEST 800M Runners",
+    duration: "14:04",
+    age: "1 month ago",
+  },
+  {
+    id: "e6V4EKhJvws",
+    title: "My College Career is OVER...",
+    duration: "17:47",
+    age: "1 month ago",
+  },
+  {
+    id: "R4pEDC98jDU",
+    title: "I Qualified for Nationals in the 800m...AGAIN!?",
+    duration: "18:07",
+    age: "2 months ago",
   },
 ];
 
@@ -387,7 +466,7 @@ function RepellingDotGrid() {
 
     const context = canvas.getContext("2d");
     const pointer = { x: -1000, y: -1000 };
-    const spacing = 40;
+    const spacing = 32;
     const repulsionRadius = 190;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -828,11 +907,12 @@ export default function HomePage() {
 
           <TypedName start={!isLoading} />
 
-          <p className="mt-7 max-w-md text-balance font-body text-lg leading-relaxed text-ink-soft">
-            Niko Schultz is a Puerto Rico–eligible 800m runner, Penn State
+          <p className="hero-statement mt-7 max-w-md text-balance">
+            <span className="hero-statement-name">Niko Schultz</span> is a
+            Puerto Rico–eligible <strong>800m runner</strong>, Penn State
             student-athlete, and NCAA First-Team All-American. A Joliet,
-            Illinois native, he owns a 1:45.24 personal best and finished sixth
-            in the 2026 NCAA Division I Outdoor 800m final.
+            Illinois native, he owns a <strong>1:45.24 personal best</strong>
+            and finished sixth in the 2026 NCAA Division I Outdoor 800m final.
           </p>
 
           <div className="mt-9 flex flex-wrap gap-4">
@@ -859,17 +939,17 @@ export default function HomePage() {
         <h2 className="section-heading section-title" data-reveal>
           Personal Bests
         </h2>
-        <p className="mt-3 max-w-lg leading-relaxed text-ink-soft" data-reveal>
-          Proven range from the 400m through the 800m.
-        </p>
-
         <div className="mt-10 grid gap-5 sm:grid-cols-3">
           {personalBests.map((pb) => (
-            <div
+            <a
               key={pb.event}
+              href={pb.href}
+              target="_blank"
+              rel="noreferrer"
               className="split-chip group"
               data-reveal
               data-cursor-hover
+              aria-label={`View official ${pb.event} result for ${pb.time}`}
             >
               <span className="chip-topline">
                 <span className="font-mono text-xs uppercase tracking-widest2 text-cream/70">
@@ -882,7 +962,8 @@ export default function HomePage() {
                 {pb.place}
               </span>
               <span className="chip-corner" aria-hidden="true" />
-            </div>
+              <span className="split-result-link">View result ↗</span>
+            </a>
           ))}
         </div>
       </section>
@@ -952,15 +1033,65 @@ export default function HomePage() {
           <h2 className="section-heading section-title" data-reveal>
             The Journey
           </h2>
-          <p
-            className="mt-3 max-w-xl leading-relaxed text-ink-soft"
-            data-reveal
-          >
-            From high school laps in Illinois to NCAA finals and international
-            racing — scroll through the milestones that shaped the journey.
-          </p>
         </div>
         <ProgressTimeline />
+      </section>
+
+      {/* FOLLOW */}
+      <section
+        id="follow"
+        data-section
+        className="follow-section relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div>
+            <h2 className="section-heading section-title" data-reveal>
+              Follow
+            </h2>
+            <p
+              className="mt-3 max-w-lg leading-relaxed text-ink-soft"
+              data-reveal
+            >
+              Training, racing, and the work between the finish lines.
+            </p>
+          </div>
+          <span className="follow-prompt" data-reveal>
+            Choose a platform ↗
+          </span>
+        </div>
+        <div className="follow-grid mt-10">
+          {followLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target={
+                link.className.includes("is-placeholder") ? undefined : "_blank"
+              }
+              rel={
+                link.className.includes("is-placeholder")
+                  ? undefined
+                  : "noreferrer"
+              }
+              className={`follow-card ${link.className}`}
+              data-reveal
+              data-cursor-hover
+              aria-label={
+                link.className.includes("is-placeholder")
+                  ? `${link.label} link placeholder`
+                  : `Follow Niko on ${link.label}`
+              }
+            >
+              <span className="follow-card-index">
+                0{followLinks.indexOf(link) + 1}
+              </span>
+              <span className="follow-card-name">{link.label}</span>
+              <span className="follow-card-handle">{link.handle}</span>
+              <span className="follow-card-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          ))}
+        </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-6">
@@ -1025,6 +1156,63 @@ export default function HomePage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* RECENT VIDEOS */}
+      <section
+        id="videos"
+        data-section
+        className="recent-videos relative mx-auto max-w-6xl px-6 py-24"
+      >
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div>
+            <h2 className="section-heading section-title" data-reveal>
+              Recent Vids
+            </h2>
+            <p
+              className="mt-3 max-w-lg leading-relaxed text-ink-soft"
+              data-reveal
+            >
+              The newest training, racing, and behind-the-scenes uploads.
+            </p>
+          </div>
+          <a
+            className="video-channel-link"
+            href="https://www.youtube.com/@nikoschultz4306/videos"
+            target="_blank"
+            rel="noreferrer"
+            data-cursor-hover
+          >
+            View channel <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <div className="video-grid mt-10">
+          {recentVideos.map((video, index) => (
+            <a
+              key={video.id}
+              href={`https://www.youtube.com/watch?v=${video.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="video-card"
+              data-reveal
+              data-cursor-hover
+            >
+              <div className="video-thumb">
+                <img
+                  src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                  alt={`Thumbnail for ${video.title}`}
+                  loading={index > 1 ? "lazy" : "eager"}
+                />
+                <span className="video-play" aria-hidden="true">
+                  ▶
+                </span>
+                <span className="video-duration">{video.duration}</span>
+              </div>
+              <span className="video-meta">{video.age}</span>
+              <h3>{video.title}</h3>
+            </a>
+          ))}
         </div>
       </section>
 
@@ -1476,10 +1664,29 @@ export default function HomePage() {
           border-bottom: 1px solid rgba(35, 42, 37, 0.14);
         }
         .audience-intro {
-          color: #b76849;
-          font-size: 0.92rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          padding: 0.48rem 0.76rem 0.48rem 0.6rem;
+          border: 1px solid rgba(183, 104, 73, 0.22);
+          border-radius: 999px;
+          background: rgba(255, 252, 241, 0.52);
+          box-shadow: 0 8px 18px -18px rgba(183, 104, 73, 0.8);
+          color: #a5543e;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.67rem;
           font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
           white-space: nowrap;
+        }
+        .audience-intro::before {
+          width: 0.48rem;
+          height: 0.48rem;
+          border-radius: 999px;
+          background: #d1a83d;
+          box-shadow: 0 0 0 4px rgba(209, 168, 61, 0.14);
+          content: "";
         }
         .audience-list {
           display: flex;
@@ -1544,26 +1751,61 @@ export default function HomePage() {
         }
         .hero-background-image {
           object-position: center 36%;
-          filter: saturate(0.78) contrast(0.94);
-          transform: scale(1.03);
+          filter: saturate(0.7) contrast(0.95) brightness(1.04);
+          transform: scale(1.05);
         }
         .hero-background-fade {
           position: absolute;
           inset: 0;
-          background: linear-gradient(
+          background: radial-gradient(
+              circle at 79% 42%,
+              rgba(247, 241, 228, 0) 0 20%,
+              rgba(247, 241, 228, 0.28) 48%,
+              #f7f1e4 92%
+            ),
+            linear-gradient(
               90deg,
-              #f7f1e4 2%,
-              rgba(247, 241, 228, 0.94) 31%,
-              rgba(247, 241, 228, 0.25) 60%,
-              rgba(247, 241, 228, 0) 78%
+              #f7f1e4 0%,
+              rgba(247, 241, 228, 0.92) 27%,
+              rgba(247, 241, 228, 0.5) 47%,
+              rgba(247, 241, 228, 0.1) 72%,
+              rgba(247, 241, 228, 0) 100%
             ),
             linear-gradient(
               180deg,
               #f7f1e4 0%,
-              rgba(247, 241, 228, 0.14) 24%,
-              rgba(247, 241, 228, 0) 62%,
+              rgba(247, 241, 228, 0.02) 28%,
+              rgba(247, 241, 228, 0.08) 72%,
               #f7f1e4 100%
             );
+        }
+        .hero-statement {
+          color: rgba(35, 42, 37, 0.72);
+          font-family: var(--font-body), ui-rounded, sans-serif;
+          font-size: clamp(1rem, 1.75vw, 1.16rem);
+          line-height: 1.68;
+        }
+        .hero-statement-name {
+          color: #202720;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: 1.16em;
+        }
+        .hero-statement strong {
+          position: relative;
+          color: #a5543e;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+        .hero-statement strong::after {
+          position: absolute;
+          right: 0;
+          bottom: -0.1rem;
+          left: 0;
+          height: 0.14rem;
+          border-radius: 999px;
+          background: rgba(209, 168, 61, 0.65);
+          content: "";
+          transform: rotate(-1deg);
         }
         .hero-content {
           display: flex;
@@ -1716,6 +1958,14 @@ export default function HomePage() {
           font-weight: 700;
           letter-spacing: -0.04em;
         }
+        .sponsor-erly {
+          color: #7a4a94;
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.05rem, 2.25vw, 1.45rem);
+          font-weight: 700;
+          letter-spacing: -0.07em;
+          text-transform: lowercase;
+        }
         @keyframes sponsorMarquee {
           from {
             transform: translateX(0);
@@ -1727,6 +1977,8 @@ export default function HomePage() {
         .split-chip {
           position: relative;
           display: flex;
+          color: inherit;
+          text-decoration: none;
           min-height: 13.25rem;
           flex-direction: column;
           justify-content: space-between;
@@ -1783,6 +2035,26 @@ export default function HomePage() {
           font-weight: 700;
           letter-spacing: -0.08em;
           line-height: 1;
+        }
+        .split-result-link {
+          position: relative;
+          z-index: 1;
+          margin-top: 0.15rem;
+          color: #d1a83d;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.61rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          opacity: 0;
+          transform: translateY(0.4rem);
+          transition:
+            opacity 250ms ease,
+            transform 250ms ease;
+          text-transform: uppercase;
+        }
+        .split-chip:hover .split-result-link {
+          opacity: 1;
+          transform: translateY(0);
         }
         .chip-corner {
           position: absolute;
@@ -1925,6 +2197,216 @@ export default function HomePage() {
           background: rgba(255, 254, 241, 0.96);
           box-shadow: 0 24px 44px -30px rgba(25, 31, 27, 0.65);
           transform: translateY(-0.35rem) rotate(-0.35deg);
+        }
+
+        .follow-section {
+          overflow: hidden;
+        }
+        .follow-prompt {
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.69rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        .follow-grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          border-top: 1px solid rgba(35, 42, 37, 0.13);
+          border-left: 1px solid rgba(35, 42, 37, 0.13);
+        }
+        .follow-card {
+          position: relative;
+          display: flex;
+          min-height: 13rem;
+          flex-direction: column;
+          justify-content: flex-end;
+          overflow: hidden;
+          padding: 1.25rem;
+          border-right: 1px solid rgba(35, 42, 37, 0.13);
+          border-bottom: 1px solid rgba(35, 42, 37, 0.13);
+          background: rgba(255, 252, 241, 0.35);
+          color: #202720;
+          text-decoration: none;
+          transition:
+            color 300ms ease,
+            background 300ms ease,
+            transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .follow-card::before {
+          position: absolute;
+          top: 1.1rem;
+          left: 1.1rem;
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 999px;
+          background: currentColor;
+          content: "";
+          opacity: 0.09;
+          transform: scale(0.7);
+          transition:
+            transform 300ms ease,
+            opacity 300ms ease;
+        }
+        .follow-card:hover {
+          z-index: 1;
+          background: #202720;
+          color: #f7f1e4;
+          transform: translateY(-0.35rem);
+        }
+        .follow-card:hover::before {
+          opacity: 0.16;
+          transform: scale(3.2);
+        }
+        .follow-card-index,
+        .follow-card-arrow {
+          position: absolute;
+          top: 1rem;
+          color: inherit;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.64rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+        }
+        .follow-card-index {
+          left: 1rem;
+          opacity: 0.62;
+        }
+        .follow-card-arrow {
+          right: 1rem;
+          font-size: 1rem;
+          transition: transform 280ms ease;
+        }
+        .follow-card:hover .follow-card-arrow {
+          transform: translate(0.25rem, -0.25rem);
+        }
+        .follow-card-name {
+          font-family: var(--font-display), ui-rounded, sans-serif;
+          font-size: clamp(1.2rem, 2vw, 1.55rem);
+          line-height: 1;
+        }
+        .follow-card-handle {
+          margin-top: 0.55rem;
+          font-size: 0.7rem;
+          font-weight: 700;
+          opacity: 0.62;
+        }
+        .follow-youtube {
+          color: #b43f37;
+        }
+        .follow-instagram {
+          color: #a34d69;
+        }
+        .follow-tiktok {
+          color: #202720;
+        }
+        .follow-strava {
+          color: #d46c3e;
+        }
+        .follow-linktree {
+          color: #4d8f72;
+        }
+        .follow-card.is-placeholder {
+          border-style: dashed;
+          opacity: 0.72;
+        }
+        .follow-card.is-placeholder:hover {
+          color: #d46c3e;
+          background: rgba(212, 108, 62, 0.08);
+        }
+        .video-channel-link {
+          display: inline-flex;
+          gap: 0.45rem;
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.69rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        .video-grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 1rem;
+        }
+        .video-card {
+          color: #202720;
+          text-decoration: none;
+          transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .video-card:hover {
+          transform: translateY(-0.45rem);
+        }
+        .video-thumb {
+          position: relative;
+          aspect-ratio: 16 / 10;
+          overflow: hidden;
+          border-radius: 1.05rem;
+          background: #202720;
+          box-shadow: 0 16px 28px -22px rgba(25, 31, 27, 0.9);
+        }
+        .video-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition:
+            transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 250ms ease;
+        }
+        .video-card:hover .video-thumb img {
+          transform: scale(1.08);
+          opacity: 0.76;
+        }
+        .video-play {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: grid;
+          width: 2.45rem;
+          height: 2.45rem;
+          place-items: center;
+          border: 1px solid rgba(247, 241, 228, 0.7);
+          border-radius: 999px;
+          background: rgba(32, 39, 32, 0.66);
+          color: #f7f1e4;
+          font-size: 0.7rem;
+          transform: translate(-50%, -50%);
+          transition:
+            transform 260ms ease,
+            background 260ms ease;
+        }
+        .video-card:hover .video-play {
+          background: #b76849;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+        .video-duration {
+          position: absolute;
+          right: 0.5rem;
+          bottom: 0.5rem;
+          padding: 0.2rem 0.32rem;
+          border-radius: 0.26rem;
+          background: rgba(20, 26, 23, 0.84);
+          color: #f7f1e4;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.59rem;
+          font-weight: 700;
+        }
+        .video-card h3 {
+          margin-top: 0.55rem;
+          font-size: 0.92rem;
+          font-weight: 700;
+          line-height: 1.28;
+        }
+        .video-meta {
+          display: block;
+          margin-top: 0.75rem;
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: 0.61rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
 
         .news-table tr + tr {
@@ -2125,11 +2607,17 @@ export default function HomePage() {
             opacity: 0.4;
           }
           .hero-background-fade {
-            background: linear-gradient(
+            background: radial-gradient(
+                circle at 72% 42%,
+                rgba(247, 241, 228, 0) 0 18%,
+                rgba(247, 241, 228, 0.3) 54%,
+                #f7f1e4 95%
+              ),
+              linear-gradient(
                 90deg,
                 #f7f1e4 0%,
-                rgba(247, 241, 228, 0.72) 52%,
-                rgba(247, 241, 228, 0.12) 100%
+                rgba(247, 241, 228, 0.82) 44%,
+                rgba(247, 241, 228, 0.18) 100%
               ),
               linear-gradient(180deg, #f7f1e4 0%, transparent 30%, #f7f1e4 100%);
           }
@@ -2147,6 +2635,10 @@ export default function HomePage() {
           }
           .audience-card {
             width: 100%;
+          }
+          .hero-statement {
+            max-width: 22rem;
+            font-size: 1rem;
           }
           .future-goals {
             align-items: flex-start;
@@ -2170,6 +2662,29 @@ export default function HomePage() {
           }
           .sponsor-track {
             padding: 0.75rem 0;
+          }
+          .follow-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+          .follow-card {
+            min-height: 10.5rem;
+          }
+          .follow-card:last-child {
+            grid-column: span 2;
+          }
+          .video-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.15rem 0.85rem;
+          }
+          .video-card:first-child {
+            grid-column: span 2;
+          }
+          .video-card h3 {
+            font-size: 0.88rem;
+          }
+          .split-result-link {
+            opacity: 1;
+            transform: none;
           }
           .journey-timeline {
             margin-top: 2.5rem;
