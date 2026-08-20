@@ -7,6 +7,9 @@ export default function robots() {
       allow: "/",
     },
     host: site.url,
-    sitemap: `${site.url}/sitemap.xml`,
+    sitemap: [
+      `${site.url}/sitemap.xml`,
+      `${site.url}/image-sitemap.xml`,
+    ],
   };
 }
