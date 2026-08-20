@@ -128,7 +128,10 @@ export const metadata = {
     images: ["/opengraph-image.png"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
     apple: [
       {
         url: "/apple-touch-icon.png",
