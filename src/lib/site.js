@@ -1,7 +1,7 @@
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
 function normalizeSiteUrl(value) {
-  const url = new URL(value || "https://nikoschultz.com");
+  const url = new URL(value || "https://nikogoat.vercel.app");
   url.pathname = "";
   url.search = "";
   url.hash = "";
