@@ -822,10 +822,15 @@ function ProgressTimeline() {
 
   return (
     <div className="journey-timeline" ref={timelineRef}>
-      <div className="timeline-rail" aria-hidden="true">
+      <div className="timeline-rail">
         <span className="timeline-rail-progress" />
         <span className="timeline-runner">
-          <Image src="/images/ns.png" alt="" fill sizes="40px" />
+          <Image
+            src="/images/ns.png"
+            alt="Niko Schultz monogram marking the journey timeline"
+            fill
+            sizes="40px"
+          />
         </span>
       </div>
 
@@ -1086,11 +1091,10 @@ export default function HomePage() {
       >
         <div
           className={`hero-background ${isLoading ? "is-loading" : "is-ready"}`}
-          aria-hidden="true"
         >
           <Image
             src="/images/hero.jpg"
-            alt=""
+            alt="Niko Schultz competing in an 800m track race"
             fill
             priority
             sizes="(min-width: 640px) 72vw, 100vw"
@@ -1437,7 +1441,11 @@ export default function HomePage() {
 
         <div className="news-mobile-list mt-7">
           {news.map((row) => (
-            <article key={row.title} className="news-mobile-item" data-reveal>
+            <article
+              key={row.title}
+              className={`news-mobile-item is-${row.status.toLowerCase()}`}
+              data-reveal
+            >
               <div>
                 <span className="news-mobile-date">{row.date}</span>
                 <span
@@ -1592,7 +1600,7 @@ export default function HomePage() {
             </div>
 
             <div className="sm:justify-self-end">
-              <ul className="space-y-3 font-body text-xl font-semibold">
+              <ul className="contact-socials space-y-3 font-body text-xl font-semibold">
                 {[
                   ["Instagram", "https://instagram.com/nikoschultzzz"],
                   ["TikTok", "https://tiktok.com/@nikojschultz"],
@@ -1619,11 +1627,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end px-1 text-sm text-ink-soft">
-          <span className="font-mono text-xs tracking-[0.18em]">
-            800M · PENN STATE
-          </span>
-        </div>
         <p className="footer-legal">
           By viewing this page, you agree to the{" "}
           <a
@@ -1633,6 +1636,15 @@ export default function HomePage() {
             data-cursor-hover
           >
             Terms of Service
+          </a>
+          <span aria-hidden="true"> · </span>
+          <a
+            href="https://github.com/NOTAM-bobk/nikogoat"
+            target="_blank"
+            rel="noreferrer"
+            data-cursor-hover
+          >
+            Source Code
           </a>
           . Built &amp; Designed by <span>{"{ss}"}</span>
         </p>
@@ -2093,33 +2105,40 @@ export default function HomePage() {
           column-gap: 0.5rem;
           align-items: baseline;
           min-width: 12rem;
-          padding: 0.65rem 0.8rem 0.55rem;
-          border: 1px solid rgba(35, 42, 37, 0.1);
+          padding: 0.72rem 0.88rem 0.62rem;
+          border: 1px solid transparent;
           border-radius: 1rem;
-          background: rgba(255, 255, 255, 0.4);
-          box-shadow: 0 12px 24px -24px rgba(25, 31, 27, 0.8);
+          box-shadow: 0 16px 30px -22px rgba(25, 31, 27, 0.55);
           transition:
             transform 250ms ease,
-            background 250ms ease,
-            box-shadow 250ms ease;
+            box-shadow 250ms ease,
+            filter 250ms ease;
+        }
+        .audience-youtube {
+          border-color: rgba(255, 255, 255, 0.42);
+          background: linear-gradient(135deg, #cf3f35, #a9272c);
+          color: #fff9ef;
+        }
+        .audience-instagram {
+          border-color: rgba(255, 255, 255, 0.38);
+          background: linear-gradient(135deg, #6d3da7 0%, #c34783 52%, #e2784a 100%);
+          color: #fff9ef;
         }
         .audience-card:hover {
           transform: translateY(-3px) rotate(-0.5deg);
-          background: rgba(255, 255, 255, 0.72);
-          box-shadow: 0 18px 30px -22px rgba(25, 31, 27, 0.7);
+          box-shadow: 0 22px 38px -22px rgba(25, 31, 27, 0.7);
+          filter: saturate(1.08) brightness(1.04);
         }
         .audience-platform {
           font-size: 0.75rem;
           font-weight: 700;
         }
-        .audience-youtube .audience-platform {
-          color: #bf3d32;
-        }
+        .audience-youtube .audience-platform,
         .audience-instagram .audience-platform {
-          color: #aa4a6a;
+          color: rgba(255, 249, 239, 0.88);
         }
         .audience-count {
-          color: #202720;
+          color: #fff9ef;
           font-family: var(--font-mono), ui-monospace, monospace;
           font-size: 1.25rem;
           font-weight: 700;
@@ -2128,7 +2147,7 @@ export default function HomePage() {
         .audience-label {
           grid-column: 1 / -1;
           margin-top: 0.12rem;
-          color: rgba(35, 42, 37, 0.57);
+          color: rgba(255, 249, 239, 0.76);
           font-size: 0.63rem;
           letter-spacing: 0.02em;
         }
@@ -3413,14 +3432,22 @@ export default function HomePage() {
           }
           .news-mobile-list {
             display: grid;
-            gap: 0.7rem;
+            gap: 0.8rem;
           }
           .news-mobile-item {
-            padding: 0.95rem 1rem;
-            border: 1px solid rgba(35, 42, 37, 0.1);
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.44);
             border-radius: 1rem;
-            background: rgba(255, 255, 255, 0.32);
-            box-shadow: 0 12px 25px -23px rgba(25, 31, 27, 0.8);
+            background: linear-gradient(135deg, #fff8e8, #f7e7ca);
+            box-shadow: 0 15px 28px -23px rgba(25, 31, 27, 0.82);
+          }
+          .news-mobile-item.is-race {
+            border-color: rgba(128, 151, 116, 0.42);
+            background: linear-gradient(135deg, #edf4e7, #dcebd4);
+          }
+          .news-mobile-item.is-update {
+            border-color: rgba(209, 168, 61, 0.46);
+            background: linear-gradient(135deg, #fff4ca, #f4df97);
           }
           .news-mobile-item > div {
             display: flex;
@@ -3437,18 +3464,18 @@ export default function HomePage() {
             text-transform: uppercase;
           }
           .news-mobile-status {
-            padding: 0.2rem 0.42rem;
+            padding: 0.24rem 0.48rem;
             border-radius: 999px;
-            background: rgba(102, 137, 122, 0.14);
-            color: #415944;
+            background: #526f54;
+            color: #fffdf4;
             font-size: 0.56rem;
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
           }
           .news-mobile-status.is-update {
-            background: rgba(209, 168, 61, 0.16);
-            color: #8a6615;
+            background: #b8881c;
+            color: #fff9e8;
           }
           .news-title {
             margin: 0.62rem 0 0;
@@ -3536,17 +3563,24 @@ export default function HomePage() {
           .contact-panel .sm\\:justify-self-end {
             justify-self: stretch;
           }
-          .contact-panel ul {
+          .contact-panel .contact-socials {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 0.5rem;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
           }
           .contact-panel .footer-link {
+            display: inline-flex;
+            min-height: 2.7rem;
+            align-items: center;
             justify-content: center;
-            padding: 0.55rem 0.25rem;
-            border: 1px solid rgba(244, 239, 228, 0.14);
+            gap: 0.32rem;
+            padding: 0.45rem 0.2rem;
+            border: 1px solid rgba(244, 239, 228, 0.2);
             border-radius: 0.65rem;
+            line-height: 1.15;
+            text-align: center;
+            white-space: nowrap;
           }
           .footer-tools {
             align-items: flex-start;

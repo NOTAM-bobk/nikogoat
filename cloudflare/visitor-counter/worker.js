@@ -1,7 +1,4 @@
-const ALLOWED_ORIGINS = new Set([
-  "https://nikoschultz.com",
-  "https://www.nikoschultz.com",
-]);
+const ALLOWED_ORIGINS = new Set(["https://nikogoat.vercel.app"]);
 
 function corsHeaders(origin) {
   return {

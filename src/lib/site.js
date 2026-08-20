@@ -34,4 +34,4 @@ export function absoluteUrl(pathname = "/") {
 
 export const siteConfigurationNotice = configuredSiteUrl
   ? null
-  : "Set NEXT_PUBLIC_SITE_URL in Vercel to the verified HTTPS production origin before launch.";
+  : "Set NEXT_PUBLIC_SITE_URL in Vercel to https://nikogoat.vercel.app before launch.";

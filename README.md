@@ -4,13 +4,13 @@ This repository contains a Next.js 14 App Router website for a public **independ
 
 ## Canonical origin and deployment
 
-The canonical origin is controlled in `src/lib/site.js` through `NEXT_PUBLIC_SITE_URL`. Set this Vercel environment variable to the one approved HTTPS production hostname before deploying, for example:
+The canonical origin is controlled in `src/lib/site.js` through `NEXT_PUBLIC_SITE_URL`. The approved production hostname is:
 
 ```text
-NEXT_PUBLIC_SITE_URL=https://your-approved-domain.example
+NEXT_PUBLIC_SITE_URL=https://nikogoat.vercel.app
 ```
 
-The same origin powers canonical metadata, Open Graph URLs, Twitter cards, JSON-LD, `robots.txt`, `sitemap.xml`, and `llms.txt`. Do not point these surfaces at a Vercel preview URL. Redirect all alternate production hostnames permanently to the selected canonical hostname before submitting the sitemap to search platforms.
+The same origin powers canonical metadata, Open Graph URLs, Twitter cards, JSON-LD, `robots.txt`, `sitemap.xml`, and `llms.txt`. Do not point these surfaces at a temporary branch-preview URL. Redirect any alternate production hostname permanently to `https://nikogoat.vercel.app` before submitting the sitemap to search platforms.
 
 ## SEO and AI-discovery policy
 

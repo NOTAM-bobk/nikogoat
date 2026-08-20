@@ -47,7 +47,7 @@ WHERE last_seen >= datetime('now', '-30 days');
 
 ## Important configuration notes
 
-The Worker accepts browser requests only from `https://nikoschultz.com` and `https://www.nikoschultz.com`. If you test with a different production domain, edit the `ALLOWED_ORIGINS` values near the top of `worker.js` before pasting it into Cloudflare.
+The Worker accepts browser requests only from `https://nikogoat.vercel.app`. If the production hostname changes later, update the `ALLOWED_ORIGINS` value near the top of `worker.js` before pasting it into Cloudflare.
 
 Do not expose the D1 database, `HASH_SALT`, database query console, or any visitor-level data. The included `/count` endpoint returns only one public aggregate number (`uniqueVisitors`) for the contact card; it never returns IP addresses, hashes, timestamps, or individual visitor records. This keeps the stored pseudonymous markers private.
 

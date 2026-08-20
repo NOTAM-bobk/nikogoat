@@ -4,13 +4,13 @@
 
 The website now uses `src/lib/site.js` as the single source for its configured canonical origin, public description, and verified profile links. Root metadata, JSON-LD, `robots.txt`, `sitemap.xml`, and the optional `llms.txt` route all read from this shared configuration.
 
-The homepage emits one server-rendered `WebSite` / `Person` / `WebPage` schema graph. The hero H1 is present as **Niko Schultz** in the initial rendered HTML; the typewriter effect is retained as a progressive enhancement after loading. The sitemap lists only the current canonical homepage and does not generate an artificial `lastModified` timestamp on each build.
+The homepage emits one server-rendered `WebSite` / `Person` / `WebPage` schema graph. The hero H1 is present as **Niko Schultz — Puerto Rico 800m Runner** in the initial rendered HTML; the typewriter effect is retained as a progressive enhancement after loading. The sitemap lists only the current canonical homepage and does not generate an artificial `lastModified` timestamp on each build.
 
 ## Required owner decisions before launch
 
 | Decision | Required action |
 | --- | --- |
-| Canonical hostname | Set `NEXT_PUBLIC_SITE_URL` in Vercel to one approved HTTPS production origin. Permanently redirect every alternate hostname to it. |
+| Canonical hostname | Set `NEXT_PUBLIC_SITE_URL` in Vercel to `https://nikogoat.vercel.app`. Permanently redirect every alternate production hostname to it. |
 | Authority status | Confirm whether this is an authorized official athlete site or an independent profile resource. The current code uses the more conservative independent-resource description. |
 | Factual approval | Confirm the public biography, results, affiliations, profile links, partner statements, images, contact details, terms, support links, and videos. |
 | Public routes | Add `/about/`, `/results/`, `/media/`, or update pages only when each has permanent, approved, original, source-backed content. |
