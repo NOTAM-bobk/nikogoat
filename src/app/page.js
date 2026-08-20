@@ -601,6 +601,7 @@ function TypedName({ start }) {
       <span>{firstName || "\u00A0"}</span>
       <br />
       <span>{lastName || "\u00A0"}</span>
+      <span className="hero-title-context">Puerto Rico 800m Runner</span>
       <span className="typing-caret" aria-hidden="true" />
     </h1>
   );
@@ -839,7 +840,7 @@ function ProgressTimeline() {
             <div className="timeline-copy">
               <span className="timeline-year">{milestone.year}</span>
               <span className="timeline-stage">{milestone.stage}</span>
-              <h3>{milestone.title}</h3>
+              <p className="timeline-title">{milestone.title}</p>
               <p>{milestone.detail}</p>
             </div>
           </article>
@@ -1083,7 +1084,10 @@ export default function HomePage() {
         id="top"
         className="hero-section relative mx-auto max-w-6xl overflow-visible px-6 pb-28 pt-10 sm:pb-36 sm:pt-16"
       >
-        <div className="hero-background" aria-hidden="true">
+        <div
+          className={`hero-background ${isLoading ? "is-loading" : "is-ready"}`}
+          aria-hidden="true"
+        >
           <Image
             src="/images/hero.jpg"
             alt=""
@@ -1295,7 +1299,7 @@ export default function HomePage() {
               <span className="achievement-index">0{index + 1}</span>
               <span className="achievement-year">{achievement.year}</span>
               <strong>{achievement.metric}</strong>
-              <h3>{achievement.title}</h3>
+              <p className="achievement-title">{achievement.title}</p>
               <p>{achievement.detail}</p>
               <span className="achievement-proof">View proof ↗</span>
             </a>
@@ -1442,7 +1446,7 @@ export default function HomePage() {
                   {row.status}
                 </span>
               </div>
-              <h3>{row.title}</h3>
+              <p className="news-title">{row.title}</p>
               <p>
                 {row.location} · {row.category}
               </p>
@@ -1501,7 +1505,7 @@ export default function HomePage() {
                 <span className="video-duration">{video.duration}</span>
               </div>
               <span className="video-meta">{video.age}</span>
-              <h3>{video.title}</h3>
+              <p className="video-title">{video.title}</p>
             </a>
           ))}
         </div>
@@ -1769,6 +1773,18 @@ export default function HomePage() {
           z-index: 1;
           display: inline-block;
           min-width: 2.25ch;
+        }
+        .hero-title-context {
+          display: block !important;
+          min-width: 0 !important;
+          margin-top: 0.62rem;
+          color: #b76849;
+          font-family: var(--font-mono), ui-monospace, monospace;
+          font-size: clamp(0.52rem, 1vw, 0.78rem);
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          line-height: 1.2;
+          text-transform: uppercase;
         }
         .name-circle {
           position: absolute;
@@ -2125,7 +2141,16 @@ export default function HomePage() {
           height: clamp(34rem, 62vw, 48rem);
           overflow: hidden;
           pointer-events: none;
+          visibility: hidden;
+          opacity: 0;
+          transition:
+            opacity 560ms cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 560ms;
+        }
+        .hero-background.is-ready {
+          visibility: visible;
           opacity: 0.73;
+          transition-delay: 0s;
         }
         .hero-background-image {
           object-position: center 36%;
@@ -2562,7 +2587,7 @@ export default function HomePage() {
           font-size: clamp(1.9rem, 3.8vw, 2.65rem);
           line-height: 1;
         }
-        .achievement-card h3 {
+        .achievement-title {
           position: relative;
           z-index: 1;
           margin-top: 1rem;
@@ -2693,7 +2718,7 @@ export default function HomePage() {
           font-size: 0.82rem;
           font-weight: 700;
         }
-        .timeline-copy h3 {
+        .timeline-title {
           margin-top: 0.65rem;
           font-family: var(--font-display), ui-rounded, sans-serif;
           font-size: clamp(1.25rem, 2.8vw, 1.75rem);
@@ -2907,7 +2932,7 @@ export default function HomePage() {
           font-size: 0.59rem;
           font-weight: 700;
         }
-        .video-card h3 {
+        .video-title {
           margin-top: 0.55rem;
           font-size: 0.92rem;
           font-weight: 700;
@@ -3265,6 +3290,8 @@ export default function HomePage() {
             right: -13rem;
             width: 35rem;
             height: 38rem;
+          }
+          .hero-background.is-ready {
             opacity: 0.4;
           }
           .hero-background-fade {
@@ -3362,7 +3389,7 @@ export default function HomePage() {
           .achievement-card strong {
             font-size: 1.75rem;
           }
-          .achievement-card h3 {
+          .achievement-title {
             font-size: 0.82rem;
           }
           .achievement-card p {
@@ -3423,7 +3450,7 @@ export default function HomePage() {
             background: rgba(209, 168, 61, 0.16);
             color: #8a6615;
           }
-          .news-mobile-item h3 {
+          .news-title {
             margin: 0.62rem 0 0;
             color: #202720;
             font-size: 0.92rem;
@@ -3443,7 +3470,7 @@ export default function HomePage() {
           .video-card:first-child {
             grid-column: span 2;
           }
-          .video-card h3 {
+          .video-title {
             font-size: 0.88rem;
           }
           .split-chip {
@@ -3555,7 +3582,7 @@ export default function HomePage() {
           #about .about-story {
             font-size: 0.82rem;
           }
-          .video-card h3 {
+          .video-title {
             font-size: 0.82rem;
           }
         }

@@ -129,6 +129,13 @@ export const metadata = {
   },
   icons: {
     icon: "/favicon.ico",
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
 };
 

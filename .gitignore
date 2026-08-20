@@ -1,0 +1,7 @@
+# Generated dependency and build artifacts
+node_modules/
+.next/
+pnpm-lock.yaml
+
+# Local environment files
+.env*.local

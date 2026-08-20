@@ -12,7 +12,7 @@ export const site = {
   name: "Niko Schultz",
   url: normalizeSiteUrl(configuredSiteUrl),
   description:
-    "Niko Schultz is a Puerto Rico-eligible 800m runner, Penn State student-athlete, NCAA First-Team All-American, and 1:45.24 performer. Explore verified results, videos, milestones, and athlete updates.",
+    "Niko Schultz is a Puerto Rico-eligible 800m runner. Explore verified results, milestones, videos, and official profile links.",
   locale: "en_US",
   language: "en-US",
   authority: "independent athlete-profile resource",
