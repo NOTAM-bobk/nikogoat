@@ -317,13 +317,13 @@ function TrackTimeCounter({ value }) {
   }, [hasStarted, targetCentiseconds, value]);
 
   return (
-    <span
+    <output
       ref={counterRef}
       className="split-time tabular-nums"
       aria-label={value}
     >
       {display}
-    </span>
+    </output>
   );
 }
 
@@ -380,13 +380,13 @@ function AnimatedAudienceCounter({ value, start }) {
   }, [start, value]);
 
   return (
-    <span
+    <output
       ref={counterRef}
       className="audience-count tabular-nums"
       aria-label={`${formatNumber(value)} followers`}
     >
       {display}
-    </span>
+    </output>
   );
 }
 
@@ -836,7 +836,7 @@ function ProgressTimeline() {
 
       <div className="timeline-stops">
         {progressMilestones.map((milestone, index) => (
-          <article
+          <div
             key={milestone.year}
             data-milestone-index={index}
             className={`timeline-stop ${activeIndex === index ? "is-active" : ""}`}
@@ -848,13 +848,12 @@ function ProgressTimeline() {
               <p className="timeline-title">{milestone.title}</p>
               <p>{milestone.detail}</p>
             </div>
-          </article>
+          </div>
         ))}
       </div>
     </div>
   );
 }
-
 function SponsorCarousel() {
   const sponsorLoop = [...sponsors, ...sponsors, ...sponsors];
 
@@ -1441,7 +1440,7 @@ export default function HomePage() {
 
         <div className="news-mobile-list mt-7">
           {news.map((row) => (
-            <article
+            <div
               key={row.title}
               className={`news-mobile-item is-${row.status.toLowerCase()}`}
               data-reveal
@@ -1458,11 +1457,10 @@ export default function HomePage() {
               <p>
                 {row.location} · {row.category}
               </p>
-            </article>
+            </div>
           ))}
         </div>
       </section>
-
       <div className="mx-auto max-w-6xl px-6">
         <div className="lane-divider news-videos-divider" />
       </div>
